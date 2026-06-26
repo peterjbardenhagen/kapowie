@@ -124,7 +124,48 @@ export function main() {
   });
 }
 
-// WXT unlisted script default export
-export default defineUnlistedScript(() => {
-  main();
+// WXT content script default export
+export default defineContentScript({
+  matches: ['http://*/*', 'https://*/*'],
+  main() {
+    console.log('[Kapowie] Content script loaded');
+
+    // Scan for video elements
+    const videoStreams = detectVideoStreams();
+    if (videoStreams.length > 0) {
+      chrome.runtime.sendMessage({
+        type: 'STREAM_DETECTED',
+        payload: { streams: videoStreams },
+      }).catch(() => {});
+    }
+
+    // Scan for Castr embeds in page source
+    const html = document.documentElement.innerHTML;
+    const castrStreams = detectCastrStreams(html);
+    if (castrStreams.length > 0) {
+      chrome.runtime.sendMessage({
+        type: 'STREAM_DETECTED',
+        payload: { streams: castrStreams },
+      }).catch(() => {});
+    }
+
+    // Set up network interception
+    interceptNetworkRequests();
+
+    // Observe DOM for dynamically added videos
+    const domObserver = new MutationObserver(() => {
+      const newStreams = detectVideoStreams();
+      if (newStreams.length > 0) {
+        chrome.runtime.sendMessage({
+          type: 'STREAM_DETECTED',
+          payload: { streams: newStreams },
+        }).catch(() => {});
+      }
+    });
+
+    domObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  },
 });
