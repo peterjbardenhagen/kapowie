@@ -1,6 +1,7 @@
 /// <reference types="chrome" />
 
 import type { StreamInfo } from '../types';
+import { defineContentScript } from 'wxt/sandbox';
 
 // ─── Guard: skip entire module in non-browser context (WXT prepare, vitest) ──
 const isBrowser = typeof document !== 'undefined' && typeof MutationObserver !== 'undefined';
@@ -199,5 +200,8 @@ function initContentScript() {
   }
 }
 
-// Content script: WXT auto-loads this based on manifest content_scripts config.
-// No default export needed — the init code at the bottom runs on import.
+export default defineContentScript(() => {
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    initContentScript();
+  }
+});

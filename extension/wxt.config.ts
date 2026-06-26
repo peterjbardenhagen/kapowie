@@ -17,26 +17,6 @@ export default defineConfig({
       'webRequest',
       'offscreen',
     ],
-    host_permissions: ['http://*/*', 'https:///*'],
-    background: {
-      service_worker: 'background.js',
-      type: 'module',
-    },
-    action: {
-      default_popup: 'popup.html',
-      default_title: 'Kapowie',
-    },
-    content_scripts: [
-      {
-        matches: ['http://*/*', 'https:///*'],
-        js: ['content.js'],
-      },
-    ],
-    web_accessible_resources: [
-      {
-        resources: ['offscreen.html'],
-        matches: [],
-      },
-    ],
+    host_permissions: ['http://*/*', 'https://*/*'],
   },
 });

@@ -1,4 +1,5 @@
 import type { ExtensionMessage, StreamInfo, Recording, RecordingSettings } from '../types';
+import { defineBackground } from 'wxt/sandbox';
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -235,7 +236,7 @@ async function downloadRecording(recording: Recording): Promise<void> {
   }
 
   // Concatenate segments into a single blob
-  const totalLength = recording.segments.reduce((sum, s) => sum + s.data.byteLength, 0);
+  const totalLength = recording.segments.reduce((sum: number, s) => sum + s.data.byteLength, 0);
   const combined = new Uint8Array(totalLength);
   let offset = 0;
   for (const segment of recording.segments) {
