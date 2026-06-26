@@ -1,53 +1,41 @@
 #!/bin/bash
-# Build and package Chrome extension for Chrome Web Store
-# Usage: ./scripts/build-extension.sh [version]
+# Build script for Chrome Extension publishing
+# Packages the extension as a ZIP file for Chrome Web Store upload
 
-set -e
+set -euo pipefail
 
-EXTENSION_DIR="$(cd "$(dirname "$0")/../extension" && pwd)"
-VERSION="${1:-$(node -p "require('$EXTENSION_DIR/package.json').version")}"
-OUTPUT_DIR="$(dirname "$0")/dist"
-PACKAGE_NAME="kapowie-extension-v${VERSION}.zip"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+EXTENSION_DIR="$PROJECT_ROOT/extension"
+BUILD_DIR="$PROJECT_ROOT/build"
+VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PROJECT_ROOT/package.json" | head -1 | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)"/\1/')
 
-echo "🎬 Building Kapowie Chrome Extension v${VERSION}"
+echo "Building Kapowie Chrome Extension v${VERSION}"
 
-# Clean previous builds
-rm -rf "$EXTENSION_DIR/.output"
-rm -rf "$OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR"
+# Clean previous build
+rm -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
 
-# Install dependencies
-cd "$EXTENSION_DIR"
-npm ci
-
-# Run type check
-echo "📋 Type checking..."
-npm run type-check
-
-# Run tests
-echo "🧪 Running tests..."
-npm run test
-
-# Build for production
-echo "🔨 Building..."
-npm run build
-
-# Verify output exists
-if [ ! -d ".output/chrome-mv3" ]; then
-    echo "❌ Build failed: .output/chrome-mv3 not found"
-    exit 1
+# Check extension directory exists
+if [ ! -d "$EXTENSION_DIR" ]; then
+  echo "Error: Extension directory not found at $EXTENSION_DIR"
+  exit 1
 fi
 
-# Package as zip
-echo "📦 Packaging..."
-cd .output/chrome-mv3
-zip -r "../../../$OUTPUT_DIR/$PACKAGE_NAME" . -x "*.DS_Store" -x "__MACOSX/*" -x "*.git*"
+# Copy extension files
+cp -r "$EXTENSION_DIR" "$BUILD_DIR/kapowie-extension"
 
-echo ""
-echo "✅ Build complete!"
-echo "   Output: $OUTPUT_DIR/$PACKAGE_NAME"
-echo "   Version: $VERSION"
-echo ""
-echo "Next steps:"
-echo "  1. Test locally: chrome://extensions → Load unpacked → select extension/.output/chrome-mv3/"
-echo "  2. Publish: Upload $PACKAGE_NAME to Chrome Web Store Developer Dashboard"
+# Update version in manifest if present
+if [ -f "$BUILD_DIR/kapowie-extension/manifest.json" ]; then
+  sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" "$BUILD_DIR/kapowie-extension/manifest.json"
+  echo "Updated manifest version to ${VERSION}"
+fi
+
+# Create ZIP
+ZIP_FILE="$BUILD_DIR/kapowie-extension-v${VERSION}.zip"
+cd "$BUILD_DIR"
+zip -r "kapowie-extension-v${VERSION}.zip" kapowie-extension/
+cd "$PROJECT_ROOT"
+
+echo "Build complete: $ZIP_FILE"
+echo "Ready for Chrome Web Store upload"

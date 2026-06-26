@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tauri::Manager;
 
+use crate::main::RestreamsState;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RecordingMeta {
     pub id: String,
@@ -38,12 +40,15 @@ pub async fn delete_recording(path: String) -> Result<(), String> {
 pub async fn get_recording_path(id: String) -> Result<String, String> {
     let recordings_dir = get_recordings_dir();
 
-    let entries = tokio::fs::read_dir(&recordings_dir)
+    let mut entries = tokio::fs::read_dir(&recordings_dir)
         .await
         .map_err(|e| format!("Failed to read recordings directory: {}", e))?;
 
-    let mut entries = tokio::fs::ReadDir::from(entries);
-    while let Some(entry) = entries.next_entry().await.ok().flatten() {
+    while let Some(entry) = entries
+        .next_entry()
+        .await
+        .map_err(|e| format!("Read dir error: {}", e))?
+    {
         let filename = entry.file_name().to_string_lossy().to_string();
         if filename.contains(&id) {
             return Ok(entry.path().to_string_lossy().to_string());
@@ -62,25 +67,9 @@ pub async fn open_recording_folder(app_handle: tauri::AppHandle) -> Result<(), S
         .await
         .map_err(|e| format!("Failed to create recordings directory: {}", e))?;
 
-    #[cfg(target_os = "windows")]
-    {
-        tauri_plugin_shell::open_path_with_command(
-            app_handle,
-            &recordings_dir,
-            None::<&str>,
-        )
+    // Use tauri-plugin-shell to open the folder
+    tauri_plugin_shell::ShellExt::open(&app_handle.shell(), &recordings_dir, None::<&str>)
         .map_err(|e| format!("Failed to open folder: {}", e))?;
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        tauri_plugin_shell::open_path_with_command(
-            app_handle,
-            &recordings_dir,
-            Some("xdg-open"),
-        )
-        .map_err(|e| format!("Failed to open folder: {}", e))?;
-    }
 
     Ok(())
 }

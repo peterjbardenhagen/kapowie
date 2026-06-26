@@ -39,7 +39,6 @@
     "shell": {
       "scope": [],
       "sidecar": false
-    },
-    "dialog": {}
+    }
   }
 }

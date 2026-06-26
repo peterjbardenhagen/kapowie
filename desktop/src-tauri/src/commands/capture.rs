@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::Arc;
+use tauri::State;
 use tokio::sync::Mutex;
+
+use crate::main::RecordingsState;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StreamInfo {
@@ -22,18 +24,6 @@ pub struct RecordingState {
     pub file_size: u64,
     pub duration_secs: f64,
 }
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ReStreamConfig {
-    pub stream_url: String,
-    pub protocol: String,
-    pub port: u16,
-    pub path: String,
-    pub status: Option<String>,
-}
-
-type ActiveRecordings = Arc<Mutex<HashMap<String, RecordingState>>>;
-type ActiveRestreams = Arc<Mutex<HashMap<String, ReStreamConfig>>>;
 
 #[tauri::command]
 pub async fn get_stream_info(url: String) -> Result<StreamInfo, String> {
@@ -62,12 +52,16 @@ pub async fn get_stream_info(url: String) -> Result<StreamInfo, String> {
         .unwrap_or("unknown")
         .to_string();
 
-    let format = match content_type.as_str() {
-        ct if ct.contains("mpegurl") || ct.contains("x-mpegurl") => "HLS".to_string(),
-        ct if ct.contains("mp2t") || ct.contains("video/mp2t") => "TS".to_string(),
-        ct if ct.contains("flv") => "FLV".to_string(),
-        ct if ct.contains("mp4") || ct.contains("video/mp4") => "MP4".to_string(),
-        _ => "Unknown".to_string(),
+    let format = if content_type.contains("mpegurl") || content_type.contains("x-mpegurl") {
+        "HLS".to_string()
+    } else if content_type.contains("mp2t") || content_type.contains("video/mp2t") {
+        "TS".to_string()
+    } else if content_type.contains("flv") {
+        "FLV".to_string()
+    } else if content_type.contains("mp4") || content_type.contains("video/mp4") {
+        "MP4".to_string()
+    } else {
+        "Unknown".to_string()
     };
 
     Ok(StreamInfo {
@@ -84,7 +78,7 @@ pub async fn start_recording(
     url: String,
     output_dir: String,
     quality: String,
-    state: tauri::State<'_, ActiveRecordingsState>,
+    recordings: State<'_, RecordingsState>,
 ) -> Result<RecordingState, String> {
     if url.is_empty() {
         return Err("Stream URL cannot be empty".to_string());
@@ -93,7 +87,11 @@ pub async fn start_recording(
     let id = uuid::Uuid::new_v4().to_string();
     let sanitized_name = chrono::Local::now().format("%Y%m%d_%H%M%S").to_string();
     let filename = format!("{}_{}.mp4", sanitized_name, &id[..8]);
-    let output_path = format!("{}/{}", output_dir.trim_end_matches('/'), filename);
+    let output_path = if output_dir.is_empty() {
+        format!("/tmp/{}", filename)
+    } else {
+        format!("{}/{}", output_dir.trim_end_matches('/'), filename)
+    };
 
     log::info!("Starting recording: {} -> {}", url, output_path);
 
@@ -107,7 +105,7 @@ pub async fn start_recording(
         duration_secs: 0.0,
     };
 
-    state.0.lock().await.insert(id.clone(), recording.clone());
+    recordings.0.lock().await.insert(id.clone(), recording.clone());
 
     Ok(recording)
 }
@@ -115,13 +113,12 @@ pub async fn start_recording(
 #[tauri::command]
 pub async fn stop_recording(
     id: String,
-    state: tauri::State<'_, ActiveRecordingsState>,
+    recordings: State<'_, RecordingsState>,
 ) -> Result<RecordingState, String> {
-    let mut recordings = state.0.lock().await;
+    let mut recs = recordings.0.lock().await;
 
-    if let Some(mut recording) = recordings.remove(&id) {
+    if let Some(mut recording) = recs.remove(&id) {
         recording.status = "completed".to_string();
-        recording.duration_secs = 0.0;
         log::info!("Stopped recording: {}", id);
         Ok(recording)
     } else {
@@ -131,11 +128,9 @@ pub async fn stop_recording(
 
 #[tauri::command]
 pub async fn list_recordings(
-    state: tauri::State<'_, ActiveRecordingsState>,
+    recordings: State<'_, RecordingsState>,
 ) -> Result<Vec<RecordingState>, String> {
-    let recordings = state.0.lock().await;
-    let list: Vec<RecordingState> = recordings.values().cloned().collect();
+    let recs = recordings.0.lock().await;
+    let list: Vec<RecordingState> = recs.values().cloned().collect();
     Ok(list)
 }
-
-pub struct ActiveRecordingsState(pub ActiveRecordings);

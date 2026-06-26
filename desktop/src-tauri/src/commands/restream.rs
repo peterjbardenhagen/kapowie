@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::Mutex;
+
+use crate::main::RestreamsState;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ReStreamStatus {
@@ -15,15 +14,13 @@ pub struct ReStreamStatus {
     pub viewer_count: u32,
 }
 
-type ActiveRestreams = Arc<Mutex<HashMap<String, ReStreamStatus>>>;
-
 #[tauri::command]
 pub async fn start_restream(
     stream_url: String,
     protocol: String,
     port: u16,
     path: String,
-    state: tauri::State<'_, ActiveRestreamsState>,
+    restreams: tauri::State<'_, RestreamsState>,
 ) -> Result<ReStreamStatus, String> {
     if stream_url.is_empty() {
         return Err("Stream URL cannot be empty".to_string());
@@ -41,7 +38,7 @@ pub async fn start_restream(
         protocol: protocol.clone(),
         port,
         path: path.clone(),
-        status: "starting".to_string(),
+        status: "active".to_string(),
         started_at: Some(chrono::Local::now().to_rfc3339()),
         viewer_count: 0,
     };
@@ -53,10 +50,7 @@ pub async fn start_restream(
         port
     );
 
-    let mut restreams = state.0.lock().await;
-    let mut status = status.clone();
-    status.status = "active".to_string();
-    restreams.insert(id.clone(), status.clone());
+    restreams.0.lock().await.insert(id.clone(), status.clone());
 
     Ok(status)
 }
@@ -64,11 +58,11 @@ pub async fn start_restream(
 #[tauri::command]
 pub async fn stop_restream(
     id: String,
-    state: tauri::State<'_, ActiveRestreamsState>,
+    restreams: tauri::State<'_, RestreamsState>,
 ) -> Result<ReStreamStatus, String> {
-    let mut restreams = state.0.lock().await;
+    let mut restream_map = restreams.0.lock().await;
 
-    if let Some(mut restream) = restreams.remove(&id) {
+    if let Some(mut restream) = restream_map.remove(&id) {
         restream.status = "stopped".to_string();
         log::info!("Stopped re-stream: {}", id);
         Ok(restream)
@@ -79,11 +73,9 @@ pub async fn stop_restream(
 
 #[tauri::command]
 pub async fn get_restream_status(
-    state: tauri::State<'_, ActiveRestreamsState>,
+    restreams: tauri::State<'_, RestreamsState>,
 ) -> Result<Vec<ReStreamStatus>, String> {
-    let restreams = state.0.lock().await;
-    let list: Vec<ReStreamStatus> = restreams.values().cloned().collect();
+    let restream_map = restreams.0.lock().await;
+    let list: Vec<ReStreamStatus> = restream_map.values().cloned().collect();
     Ok(list)
 }
-
-pub struct ActiveRestreamsState(pub ActiveRestreams);

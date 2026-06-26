@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
@@ -9,9 +9,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "downlevelIteration": true,
     "noEmit": true,
     "jsx": "preserve",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": ["chrome", "vitest/globals"],
     "baseUrl": ".",
     "paths": {

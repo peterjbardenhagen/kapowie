@@ -120,72 +120,76 @@ async function handleMessage(message: ExtensionMessage, sender: chrome.runtime.M
 }
 
 // ─── Stream Detection via webRequest ─────────────────────────────────────────
+// Guard: chrome.webRequest may not exist in WXT prepare / test environments
+// WXT fake-browser has chrome.webRequest but not the actual methods
 
-chrome.webRequest.onBeforeRequest.addListener(
-  (details) => {
-    if (details.type !== 'main_frame' && details.type !== 'media') return;
-    const url = details.url;
-    if (isHLSStream(url)) {
-      const stream: StreamInfo = {
-        url,
-        type: 'hls',
-        quality: 'auto',
-        pageUrl: details.initiator,
-        detectedAt: Date.now(),
-      };
-      detectedStreams.set(url, stream);
-      chrome.runtime.sendMessage({
-        type: 'STREAM_DETECTED',
-        payload: { streams: [stream] },
-      }).catch(() => {});
-    } else if (isDASHStream(url)) {
-      const stream: StreamInfo = {
-        url,
-        type: 'dash',
-        quality: 'auto',
-        pageUrl: details.initiator,
-        detectedAt: Date.now(),
-      };
-      detectedStreams.set(url, stream);
-      chrome.runtime.sendMessage({
-        type: 'STREAM_DETECTED',
-        payload: { streams: [stream] },
-      }).catch(() => {});
-    }
-  },
-  { urls: ['http://*/*', 'https://*/*'] },
-  ['requestBody']
-);
+if (typeof chrome !== 'undefined' && typeof (chrome as any).webRequest?.onBeforeRequest === 'function') {
+  chrome.webRequest.onBeforeRequest.addListener(
+    (details) => {
+      if (details.type !== 'main_frame' && details.type !== 'media') return;
+      const url = details.url;
+      if (isHLSStream(url)) {
+        const stream: StreamInfo = {
+          url,
+          type: 'hls',
+          quality: 'auto',
+          pageUrl: details.initiator,
+          detectedAt: Date.now(),
+        };
+        detectedStreams.set(url, stream);
+        chrome.runtime.sendMessage({
+          type: 'STREAM_DETECTED',
+          payload: { streams: [stream] },
+        }).catch(() => {});
+      } else if (isDASHStream(url)) {
+        const stream: StreamInfo = {
+          url,
+          type: 'dash',
+          quality: 'auto',
+          pageUrl: details.initiator,
+          detectedAt: Date.now(),
+        };
+        detectedStreams.set(url, stream);
+        chrome.runtime.sendMessage({
+          type: 'STREAM_DETECTED',
+          payload: { streams: [stream] },
+        }).catch(() => {});
+      }
+    },
+    { urls: ['http://*/*', 'https://*/*'] },
+    ['requestBody']
+  );
 
-chrome.webRequest.onHeadersReceived.addListener(
-  (details) => {
-    if (details.type !== 'media' && details.type !== 'xmlhttprequest') return;
-    const contentType = details.responseHeaders?.find(
-      (h) => h.name.toLowerCase() === 'content-type'
-    )?.value || '';
-    const url = details.url;
-    if (
-      contentType.includes('application/vnd.apple.mpegurl') ||
-      contentType.includes('application/x-mpegurl') ||
-      url.includes('.m3u8')
-    ) {
-      const stream: StreamInfo = {
-        url,
-        type: 'hls',
-        quality: 'auto',
-        pageUrl: details.initiator,
-        detectedAt: Date.now(),
-      };
-      detectedStreams.set(url, stream);
-      chrome.runtime.sendMessage({
-        type: 'STREAM_DETECTED',
-        payload: { streams: [stream] },
-      }).catch(() => {});
-    }
-  },
-  { urls: ['http://*/*', 'https://*/*'] },
-  ['responseHeaders']
-);
+  chrome.webRequest.onHeadersReceived.addListener(
+    (details) => {
+      if (details.type !== 'media' && details.type !== 'xmlhttprequest') return;
+      const contentType = details.responseHeaders?.find(
+        (h) => h.name.toLowerCase() === 'content-type'
+      )?.value || '';
+      const url = details.url;
+      if (
+        contentType.includes('application/vnd.apple.mpegurl') ||
+        contentType.includes('application/x-mpegurl') ||
+        url.includes('.m3u8')
+      ) {
+        const stream: StreamInfo = {
+          url,
+          type: 'hls',
+          quality: 'auto',
+          pageUrl: details.initiator,
+          detectedAt: Date.now(),
+        };
+        detectedStreams.set(url, stream);
+        chrome.runtime.sendMessage({
+          type: 'STREAM_DETECTED',
+          payload: { streams: [stream] },
+        }).catch(() => {});
+      }
+    },
+    { urls: ['http://*/*', 'https://*/*'] },
+    ['responseHeaders']
+  );
+}
 
 function isHLSStream(url: string): boolean {
   return /\.m3u8(\?.*)?$/.test(url) || /\/hls\//.test(url);
@@ -271,15 +275,19 @@ async function stopRestream(): Promise<void> {
 
 // ─── Settings Persistence ────────────────────────────────────────────────────
 
-chrome.runtime.onInstalled.addListener(async () => {
-  const stored = await chrome.storage.local.get('settings');
-  if (!stored.settings) {
-    await chrome.storage.local.set({ settings: defaultSettings });
-  }
-});
+if (typeof chrome !== 'undefined' && chrome.runtime?.onInstalled) {
+  chrome.runtime.onInstalled.addListener(async () => {
+    const stored = await chrome.storage.local.get('settings');
+    if (!stored.settings) {
+      await chrome.storage.local.set({ settings: defaultSettings });
+    }
+  });
+}
 
 // ─── Cleanup on Suspend ─────────────────────────────────────────────────────
 
-chrome.runtime.onSuspend.addListener(() => {
-  console.log('[Kapowie] Service worker suspending');
-});
+if (typeof chrome !== 'undefined' && chrome.runtime?.onSuspend) {
+  chrome.runtime.onSuspend.addListener(() => {
+    console.log('[Kapowie] Service worker suspending');
+  });
+}
