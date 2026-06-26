@@ -8,6 +8,8 @@
     "build": "wxt build",
     "zip": "wxt zip",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "type-check": "tsc --noEmit -p ./tsconfig.json",
+    "lint": "npm run check && npm run type-check",
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "wxt prepare"
@@ -21,6 +23,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",
+    "svelte-check": "^4.1.4",
     "typescript": "^5.6.3",
     "vitest": "^2.1.5",
     "jsdom": "^25.0.1",

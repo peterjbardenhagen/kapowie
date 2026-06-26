@@ -5,12 +5,16 @@ on:
     branches: [main, master]
     paths:
       - 'extension/**'
+      - 'desktop/**'
       - 'shared/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, master]
     paths:
       - 'extension/**'
+      - 'desktop/**'
       - 'shared/**'
+      - '.github/workflows/ci.yml'
 
 jobs:
   extension:
@@ -34,6 +38,9 @@ jobs:
 
       - name: Type check
         run: npm run type-check
+
+      - name: Svelte check
+        run: npm run check
 
       - name: Lint
         run: npm run lint
@@ -83,6 +90,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Type check
+        run: npm run type-check
 
       - name: Build frontend
         run: npm run build

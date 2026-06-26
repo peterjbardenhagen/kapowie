@@ -124,6 +124,34 @@
     });
   }
 
+  function handleQualityChange(event: CustomEvent<string>) {
+    selectedQuality = event.detail;
+  }
+
+  function handleRecord(event: CustomEvent<StreamInfo>) {
+    return startRecording(event.detail);
+  }
+
+  function handleStop(event: CustomEvent<string>) {
+    return stopRecording(event.detail);
+  }
+
+  function handlePause(event: CustomEvent<string>) {
+    return pauseRecording(event.detail);
+  }
+
+  function handleResume(event: CustomEvent<string>) {
+    return resumeRecording(event.detail);
+  }
+
+  function handleDelete(event: CustomEvent<string>) {
+    return deleteRecording(event.detail);
+  }
+
+  function handleDownload(event: CustomEvent<string>) {
+    return downloadRecording(event.detail);
+  }
+
   async function toggleRestream() {
     if (restreamEnabled) {
       await chrome.runtime.sendMessage({ type: 'START_RESTREAM' });
@@ -179,19 +207,19 @@
       <StreamList
         {streams}
         {selectedQuality}
-        on:qualityChange={(e) => selectedQuality = e.detail}
-        on:record={async (e) => startRecording(e.detail)}
+        on:qualityChange={handleQualityChange}
+        on:record={handleRecord}
       />
     {:else if activeTab === 'recordings'}
       <RecordingControls
         recordings={recordings}
         activeRecordings={activeRecordings}
         completedRecordings={completedRecordings}
-        on:stop={(e) => stopRecording(e.detail)}
-        on:pause={(e) => pauseRecording(e.detail)}
-        on:resume={(e) => resumeRecording(e.detail)}
-        on:delete={(e) => deleteRecording(e.detail)}
-        on:download={(e) => downloadRecording(e.detail)}
+        on:stop={handleStop}
+        on:pause={handlePause}
+        on:resume={handleResume}
+        on:delete={handleDelete}
+        on:download={handleDownload}
       />
     {:else if activeTab === 'settings'}
       <div class="settings">

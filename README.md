@@ -52,7 +52,7 @@ cd extension
 npm install
 npm run build
 # Output: .output/chrome-mv3/
-# Load in Chrome: chrome://extensions → Developer mode → Load unpacked → select dist folder
+# Load in Chrome: chrome://extensions → Developer mode → Load unpacked → select .output/chrome-mv3/
 ```
 
 ### Desktop App
@@ -94,9 +94,11 @@ kapowie/
 │   ├── build-extension.sh  # Build & package Chrome extension
 │   └── publish-extension.sh # Publish to Chrome Web Store
 ├── docs/
-│   ├── architecture.md     # Technical architecture overview
-│   ├──产品规格.md     # Detailed product specification
-│   └── research.md         # Market & technical research
+│   ├── deployment-guide.md  # Release and deployment notes
+│   ├── deployment-guide-research.md # Background research for deployment
+│   ├── security/
+│   │   └── Security Audit 2026-06-26.md # Security review notes
+│   └── letsencrypt-setup.md # TLS setup notes
 ├── AGENTS.md               # AI agent contribution guidelines
 ├── README.md               # This file
 └── LICENSE                 # MIT License

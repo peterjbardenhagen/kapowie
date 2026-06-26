@@ -20,7 +20,7 @@ kapowie/
 ├── desktop/            # Windows Desktop App (Tauri) — SECONDARY
 ├── shared/             # Cross-platform shared types/utils
 ├── scripts/            # Build & publish scripts
-├── docs/               # Architecture, specs, research
+├── docs/               # Deployment, security, and setup notes
 ├── AGENTS.md           # This file
 ├── README.md
 └── LICENSE             # MIT
@@ -76,7 +76,7 @@ npm run tauri build  # Production MSI installer
 
 ### Svelte
 
-- Use Svelte 5 runes (`$state`, `$derived`, `$effect`)
+- Use the existing Svelte 4 component patterns in this repo
 - Components are single-responsibility
 - Props via `$props()` rune
 - No global CSS — use CSS modules or scoped styles
@@ -186,7 +186,7 @@ npm run tauri build  # Production MSI installer
 When working on this codebase:
 
 1. **Read the relevant `README.md`** in each sub-project first
-2. **Check `docs/architecture.md`** for system design
+2. **Check the most relevant docs under `docs/`** for deployment, security, or setup context
 3. **Follow existing patterns** — match the code style you find
 4. **Write tests** for any new functionality
 5. **Update docs** when adding features
@@ -196,5 +196,5 @@ When working on this codebase:
 ## Questions?
 
 - Check `docs/` for detailed specifications
-- Check `docs/research.md` for market research and competitor analysis
+- Check `docs/` for deployment, security, and setup notes
 - Open an issue for feature requests

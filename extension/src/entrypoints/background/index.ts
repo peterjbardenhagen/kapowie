@@ -1,4 +1,5 @@
-import type { ExtensionMessage, StreamInfo, Recording, RecordingSettings, Segment } from '/home/peterb/dev/kapowie/extension/src/types';
+import { defineBackground } from 'wxt/sandbox';
+import type { ExtensionMessage, StreamInfo, Recording, RecordingSettings, Segment } from '../../types';
 
 // ─── State ───────────────────────────────────────────────────────────────────
 

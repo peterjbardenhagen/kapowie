@@ -1,6 +1,7 @@
 /// <reference types="chrome" />
 
-import type { StreamInfo } from '../types';
+import { defineContentScript } from 'wxt/sandbox';
+import type { StreamInfo } from '../../types';
 
 // ─── Video Element Detection ──────────────────────────────────────────────────
 
