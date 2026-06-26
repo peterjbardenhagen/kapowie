@@ -1,12 +1,9 @@
-import type { ExtensionMessage, StreamInfo, Recording, RecordingSettings } from '../types';
-import { defineBackground } from 'wxt/sandbox';
+import type { ExtensionMessage, StreamInfo, Recording, RecordingSettings, Segment } from '/home/peterb/dev/kapowie/extension/src/types';
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
 const detectedStreams = new Map<string, StreamInfo>();
 const activeRecordings = new Map<string, Recording>();
-let restreamActive = false;
-let restreamPort = 8124;
 
 const defaultSettings: RecordingSettings = {
   maxQuality: 'best',
@@ -121,78 +118,69 @@ async function handleMessage(message: ExtensionMessage, sender: chrome.runtime.M
 }
 
 // ─── Stream Detection via webRequest ─────────────────────────────────────────
-// Guard: chrome.webRequest may not exist in WXT prepare / test environments
-// WXT fake-browser has chrome.webRequest but not the actual methods
+// WXT's fake browser doesn't implement webRequest — wrap in try-catch
 
-if (typeof chrome !== 'undefined' && typeof (chrome as any).webRequest?.onBeforeRequest === 'function') {
-  chrome.webRequest.onBeforeRequest.addListener(
-    (details) => {
-      if (details.type !== 'main_frame' && details.type !== 'media') return;
-      const url = details.url;
-      if (isHLSStream(url)) {
-        const stream: StreamInfo = {
-          url,
-          type: 'hls',
-          quality: 'auto',
-          pageUrl: details.initiator,
-          detectedAt: Date.now(),
-        };
-        detectedStreams.set(url, stream);
-        chrome.runtime.sendMessage({
-          type: 'STREAM_DETECTED',
-          payload: { streams: [stream] },
-        }).catch(() => {});
-      } else if (isDASHStream(url)) {
-        const stream: StreamInfo = {
-          url,
-          type: 'dash',
-          quality: 'auto',
-          pageUrl: details.initiator,
-          detectedAt: Date.now(),
-        };
-        detectedStreams.set(url, stream);
-        chrome.runtime.sendMessage({
-          type: 'STREAM_DETECTED',
-          payload: { streams: [stream] },
-        }).catch(() => {});
-      }
-    },
-    { urls: ['http://*/*', 'https://*/*'] },
-    ['requestBody']
-  );
+try {
+  const chromeAny = chrome as any;
+  if (chromeAny?.webRequest?.onBeforeRequest) {
+    chromeAny.webRequest.onBeforeRequest.addListener(
+      (details: any) => {
+        if (details.type !== 'main_frame' && details.type !== 'media') return;
+        const url = details.url;
+        if (isHLSStr(url) || isDASHStream(url)) {
+          const stream: StreamInfo = {
+            url,
+            type: isHLSStr(url) ? 'hls' : 'dash',
+            quality: 'auto',
+            pageUrl: details.initiator,
+            detectedAt: Date.now(),
+          };
+          detectedStreams.set(url, stream);
+          chromeAny.runtime.sendMessage({
+            type: 'STREAM_DETECTED',
+            payload: { streams: [stream] },
+          }).catch(() => {});
+        }
+      },
+      { urls: ['http://*/*', 'https://*/*'] },
+      ['requestBody']
+    );
 
-  chrome.webRequest.onHeadersReceived.addListener(
-    (details) => {
-      if (details.type !== 'media' && details.type !== 'xmlhttprequest') return;
-      const contentType = details.responseHeaders?.find(
-        (h) => h.name.toLowerCase() === 'content-type'
-      )?.value || '';
-      const url = details.url;
-      if (
-        contentType.includes('application/vnd.apple.mpegurl') ||
-        contentType.includes('application/x-mpegurl') ||
-        url.includes('.m3u8')
-      ) {
-        const stream: StreamInfo = {
-          url,
-          type: 'hls',
-          quality: 'auto',
-          pageUrl: details.initiator,
-          detectedAt: Date.now(),
-        };
-        detectedStreams.set(url, stream);
-        chrome.runtime.sendMessage({
-          type: 'STREAM_DETECTED',
-          payload: { streams: [stream] },
-        }).catch(() => {});
-      }
-    },
-    { urls: ['http://*/*', 'https://*/*'] },
-    ['responseHeaders']
-  );
+    chromeAny.webRequest.onHeadersReceived.addListener(
+      (details: any) => {
+        if (details.type !== 'media' && details.type !== 'xmlhttprequest') return;
+        const contentType = details.responseHeaders?.find(
+          (h: any) => h.name.toLowerCase() === 'content-type'
+        )?.value || '';
+        const url = details.url;
+        if (
+          contentType.includes('application/vnd.apple.mpegurl') ||
+          contentType.includes('application/x-mpegurl') ||
+          url.includes('.m3u8')
+        ) {
+          const stream: StreamInfo = {
+            url,
+            type: 'hls',
+            quality: 'auto',
+            pageUrl: details.initiator,
+            detectedAt: Date.now(),
+          };
+          detectedStreams.set(url, stream);
+          chromeAny.runtime.sendMessage({
+            type: 'STREAM_DETECTED',
+            payload: { streams: [stream] },
+          }).catch(() => {});
+        }
+      },
+      { urls: ['http://*/*', 'https://*/*'] },
+      ['responseHeaders']
+    );
+  }
+} catch {
+  // webRequest not available (WXT prepare, test environment) — safe to ignore
 }
 
-function isHLSStream(url: string): boolean {
+function isHLSStr(url: string): boolean {
   return /\.m3u8(\?.*)?$/.test(url) || /\/hls\//.test(url);
 }
 
@@ -235,8 +223,7 @@ async function downloadRecording(recording: Recording): Promise<void> {
     return;
   }
 
-  // Concatenate segments into a single blob
-  const totalLength = recording.segments.reduce((sum: number, s) => sum + s.data.byteLength, 0);
+  const totalLength = recording.segments.reduce<number>((sum: number, s: Segment) => sum + s.data.byteLength, 0);
   const combined = new Uint8Array(totalLength);
   let offset = 0;
   for (const segment of recording.segments) {
@@ -260,13 +247,14 @@ async function downloadRecording(recording: Recording): Promise<void> {
 
 // ─── Re-stream Server Lifecycle ──────────────────────────────────────────────
 
+let restreamActive = false;
+let restreamPort = 8124;
+
 async function startRestream(): Promise<{ active: boolean; port: number; url: string }> {
   if (restreamActive) {
     return { active: true, port: restreamPort, url: `http://localhost:${restreamPort}/live.m3u8` };
   }
   restreamActive = true;
-  // The actual HLS server runs in the offscreen document
-  // We just track state here
   return { active: true, port: restreamPort, url: `http://localhost:${restreamPort}/live.m3u8` };
 }
 
@@ -276,19 +264,21 @@ async function stopRestream(): Promise<void> {
 
 // ─── Settings Persistence ────────────────────────────────────────────────────
 
-if (typeof chrome !== 'undefined' && chrome.runtime?.onInstalled) {
-  chrome.runtime.onInstalled.addListener(async () => {
-    const stored = await chrome.storage.local.get('settings');
-    if (!stored.settings) {
-      await chrome.storage.local.set({ settings: defaultSettings });
-    }
-  });
-}
+chrome.runtime.onInstalled.addListener(async () => {
+  const stored = await chrome.storage.local.get('settings');
+  if (!stored.settings) {
+    await chrome.storage.local.set({ settings: defaultSettings });
+  }
+});
 
 // ─── Cleanup on Suspend ─────────────────────────────────────────────────────
 
-if (typeof chrome !== 'undefined' && chrome.runtime?.onSuspend) {
-  chrome.runtime.onSuspend.addListener(() => {
-    console.log('[Kapowie] Service worker suspending');
-  });
-}
+chrome.runtime.onSuspend.addListener(() => {
+  console.log('[Kapowie] Service worker suspending');
+});
+
+// WXT background entrypoint default export
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default defineBackground(() => {
+  // Background script runs on load
+});
