@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/dev/.schema/capabilities.schema.json",
+  "identifier": "default",
+  "description": "Default permissions for Kapowie desktop app",
+  "windows": ["main"],
+  "permissions": [
+    "path:default",
+    "event:default",
+    "window:default",
+    "app:default",
+    "resources:default",
+    "image:default",
+    "menu:default",
+    "tray:default",
+    "shell:allow-open",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-write",
+    "fs:allow-read",
+    "fs:allow-create"
+  ]
+}
