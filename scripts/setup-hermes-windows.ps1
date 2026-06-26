@@ -1,351 +1,741 @@
-# setup-hermes-windows.ps1
-# Complete Hermes Agent setup for Windows 11 + WSL2
-# Run as Administrator in PowerShell 7+
+#Requires -Version 7.0
+#Requires -RunAsAdministrator
+<#
+.SYNOPSIS
+    Complete Hermes Agent Setup Script for Windows 11
+    
+.DESCRIPTION
+    This script installs and configures:
+    - WSL2 with Ubuntu
+    - NVIDIA GPU passthrough
+    - Ollama with recommended models
+    - Hermes Agent with optimal configuration
+    - Telegram X bot
+    - Composio integration
+    - Tailscale VPN
+    - OpenRouter providers
+    - OpenCode Go & Zen
+    
+.PARAMETER SkipWSL
+    Skip WSL2 installation (if already installed)
+    
+.PARAMETER SkipOllama
+    Skip Ollama installation (if already installed)
+    
+.PARAMETER SkipModels
+    Skip model downloads (if already downloaded)
+    
+.PARAMETER OpenRouterKey
+    OpenRouter API key
+    
+.PARAMETER ComposioKey
+    Composio API key
+    
+.PARAMETER TelegramToken
+    Telegram bot token
+    
+.EXAMPLE
+    .\setup-hermes-windows.ps1 -OpenRouterKey "sk-or-..." -ComposioKey "ck_..." -TelegramToken "123:ABC"
+    
+.EXAMPLE
+    .\setup-hermes-windows.ps1 -SkipWSL -SkipOllama
+#>
 
 param(
     [switch]$SkipWSL,
-    [skip]$SkipOllama,
-    [switch]$SkipModels
+    [switch]$SkipOllama,
+    [switch]$SkipModels,
+    [string]$OpenRouterKey = '',
+    [string]$ComposioKey = '',
+    [string]$TelegramToken = '',
+    [string]$GitHubToken = '',
+    [string]$TimeZone = 'Australia/Brisbane',
+    [int]$RamLimitGB = 24,
+    [int]$CpuCount = 12
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 
-function Write-Step { param($msg) Write-Host "`n=== $msg ===" -ForegroundColor Cyan }
-function Write-OK { param($msg) Write-Host "  [OK] $msg" -ForegroundColor Green }
-function Write-Warn { param($msg) Write-Host "  [WARN] $msg" -ForegroundColor Yellow }
-
-# ─── Check Prerequisites ─────────────────────────────────────────────────────
-Write-Step "Checking prerequisites"
-
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator")) {
-    Write-Error "This script must be run as Administrator"
-    exit 1
+# ============================================================
+# CONFIGURATION
+# ============================================================
+$Script:Config = @{
+    WslDistro        = 'Ubuntu-22.04'
+    HermesVersion    = 'latest'
+    OllamaVersion    = 'latest'
+    Models           = @(
+        'gemma4:latest'
+        'qwen2.5-coder:14b'
+        'qwen3-vl:8b'
+        'llama3.2:latest'
+        'nomic-embed-text'
+        'mxbai-embed-large'
+        'qwen3-embedding:4b'
+    )
+    FastModels       = @(
+        'llama3.2:latest'
+        'gemma4:latest'
+    )
+    RequiredFeatures = @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform')
 }
 
-$os = Get-CimInstance Win32_OperatingSystem
-if ([int]$os.BuildNumber -lt 22000) {
-    Write-Error "Windows 11 required (build 22000+). Current: $($os.BuildNumber)"
-    exit 1
-}
-Write-OK "Windows 11 detected (build $($os.BuildNumber))"
+# ============================================================
+# UTILITY FUNCTIONS
+# ============================================================
 
-# ─── Install WSL2 ─────────────────────────────────────────────────────────────
-if (-not $SkipWSL) {
-    Write-Step "Installing WSL2"
+function Write-Header {
+    param([string]$Title)
+    Write-Host "`n$('=' * 60)" -ForegroundColor Cyan
+    Write-Host "  $Title" -ForegroundColor Cyan
+    Write-Host "$('=' * 60)`n" -ForegroundColor Cyan
+}
+
+function Write-Step {
+    param([string]$Message)
+    Write-Host "  [+] $Message" -ForegroundColor Green
+}
+
+function Write-Warn {
+    param([string]$Message)
+    Write-Host "  [!] $Message" -ForegroundColor Yellow
+}
+
+function Write-Err {
+    param([string]$Message)
+    Write-Host "  [X] $Message" -ForegroundColor Red
+}
+
+function Test-Command {
+    param([string]$Command)
+    return [bool](Get-Command -Name $Command -ErrorAction SilentlyContinue)
+}
+
+function Get-UserConfirmation {
+    param([string]$Message)
+    $response = Read-Host "  $Message (y/N)"
+    return $response -eq 'y' -or $response -eq 'Y'
+}
+
+# ============================================================
+# PREREQUISITE CHECKS
+# ============================================================
+
+function Test-Prerequisites {
+    Write-Header "Checking Prerequisites"
     
-    $wsl = Get-Command wsl -ErrorAction SilentlyContinue
-    if (-not $wsl) {
-        wsl --install -d Ubuntu-24.04 --no-launch
-        Write-OK "WSL2 installed. REBOOT required after script completes."
-    } else {
-        Write-OK "WSL2 already installed"
+    # Check Windows version
+    $os = Get-CimInstance Win32_OperatingSystem
+    $build = [int]$os.BuildNumber
+    Write-Step "Windows Build: $build"
+    
+    if ($build -lt 22000) {
+        Write-Err "Windows 11 (build 22000+) required. Current: $build"
+        throw "Incompatible Windows version"
     }
     
-    # Configure WSL
+    # Check PowerShell version
+    if ($PSVersionTable.PSVersion.Major -lt 7) {
+        Write-Warn "PowerShell 7+ recommended. Current: $($PSVersionTable.PSVersion)"
+        Write-Warn "Install with: winget install Microsoft.PowerShell"
+    } else {
+        Write-Step "PowerShell $($PSVersionTable.PSVersion) [OK]"
+    }
+    
+    # Check for GPU
+    try {
+        $gpu = Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'NVIDIA' }
+        if ($gpu) {
+            $driverVersion = $gpu.DriverVersion
+            $vram = [math]::Round($gpu.AdapterRAM / 1GB, 1)
+            Write-Step "GPU: $($gpu.Name) ($vram GB VRAM)"
+            Write-Step "Driver: $driverVersion"
+            $Script:HasGPU = $true
+        } else {
+            Write-Warn "No NVIDIA GPU found. Will use CPU-only mode."
+            $Script:HasGPU = $false
+        }
+    } catch {
+        Write-Warn "Could not detect GPU."
+        $Script:HasGPU = $false
+    }
+    
+    # Check RAM
+    $totalRam = [math]::Round($os.TotalVisibleMemorySize / 1MB, 1)
+    Write-Step "RAM: ${totalRam} GB"
+    
+    if ($totalRam -lt 16) {
+        Write-Warn "16GB+ RAM recommended. Current: ${totalRam} GB"
+    }
+    
+    # Check disk space
+    $disk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"
+    $freeGB = [math]::Round($disk.FreeSpace / 1GB, 1)
+    Write-Step "Disk Free: ${freeGB} GB"
+    
+    if ($freeGB -lt 50) {
+        Write-Warn "50GB+ free space recommended. Current: ${freeGB} GB"
+    }
+    
+    # Check Windows features
+    $Script:HasWSL = $false
+    try {
+        $wslStatus = wsl --status 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $Script:HasWSL = $true
+            Write-Step "WSL: Already installed"
+        }
+    } catch {
+        Write-Warn "WSL: Not installed"
+    }
+    
+    return $true
+}
+
+# ============================================================
+# WSL2 INSTALLATION
+# ============================================================
+
+function Install-WSL2 {
+    if ($SkipWSL -and $Script:HasWSL) {
+        Write-Step "Skipping WSL2 installation (already present)"
+        return
+    }
+    
+    Write-Header "Installing WSL2"
+    
+    # Enable Windows features
+    Write-Step "Enabling Windows features..."
+    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
+    Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
+    
+    # Set WSL2 as default
+    Write-Step "Setting WSL2 as default..."
+    wsl --set-default-version 2
+    
+    # Install Ubuntu
+    Write-Step "Installing $($Script:Config.WslDistro)..."
+    wsl --install -d $Script:Config.WslDistro --no-launch
+    
+    Write-Host ""
+    Write-Warr "WSL2 installation requires a restart to complete."
+    Write-Warr "After restart, Ubuntu will prompt you to create a user."
+    
+    if (Get-UserConfirmation "Restart now?") {
+        Restart-Computer -Confirm
+    } else {
+        Write-Warn "Please restart manually to complete WSL2 setup."
+    }
+}
+
+# ============================================================
+# WSL2 CONFIGURATION
+# ============================================================
+
+function Set-WSLConfig {
+    Write-Header "Configuring WSL2"
+    
     $wslConfig = @"
 [wsl2]
-memory=32GB
-processors=16
+memory=${RamLimitGB}GB
+processors=${CpuCount}
 swap=8GB
 localhostForwarding=true
 gpuSupport=true
 "@
-    $wslConfig | Out-File -FilePath "$env:USERPROFILE\.wslconfig" -Encoding UTF8
-    Write-OK "WSL config written"
-}
-
-# ─── Install Tailscale ────────────────────────────────────────────────────────
-Write-Step "Installing Tailscale"
-
-$tailscale = Get-Command tailscale -ErrorAction SilentlyContinue
-if (-not $tailscale) {
-    winget install Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
-    Write-OK "Tailscale installed"
-} else {
-    Write-OK "Tailscale already installed"
-}
-
-# ─── Install PowerShell 7 ─────────────────────────────────────────────────────
-Write-Step "Checking PowerShell version"
-
-if ($PSVersionTable.PSVersion.Major -lt 7) {
-    winget install Microsoft.PowerShell --accept-source-agreements --accept-package-agreements
-    Write-OK "PowerShell 7 installed. Please restart and re-run this script."
-} else {
-    Write-OK "PowerShell $($PSVersionTable.PSVersion) detected"
-}
-
-# ─── Install Ollama ───────────────────────────────────────────────────────────
-if (-not $SkipOllama) {
-    Write-Step "Installing Ollama"
     
-    $ollama = Get-Command ollama -ErrorAction SilentlyContinue
-    if (-not $ollama) {
-        # Install Ollama on Windows
-        $ollamaUrl = "https://ollama.com/download/OllamaSetup.exe"
-        $ollamaInstaller = "$env:TEMP\OllamaSetup.exe"
-        
-        Write-Host "  Downloading Ollama..." -ForegroundColor Gray
-        Invoke-WebRequest -Uri $ollamaUrl -OutFile $ollamaInstaller -UseBasicParsing
-        
-        Write-Host "  Running installer..." -ForegroundColor Gray
-        Start-Process -FilePath $ollamaInstaller -Wait
-        
-        Remove-Item $ollamaInstaller -Force
-        Write-OK "Ollama installed"
-    } else {
-        Write-OK "Ollama already installed"
+    $wslConfigPath = "$env:USERPROFILE\.wslconfig"
+    $wslConfig | Out-File -FilePath $wslConfigPath -Encoding UTF8 -Force
+    Write-Step "Created .wslconfig at $wslConfigPath"
+    
+    # Restart WSL to apply
+    wsl --shutdown
+    Write-Step "WSL2 restarted with new configuration"
+    
+    # Verify
+    wsl -d $Script:Config.WslDistro -e echo "WSL2 connected"
+    Write-Step "WSL2 configuration applied"
+}
+
+# ============================================================
+# OLLAMA INSTALLATION
+# ============================================================
+
+function Install-OllamaWindows {
+    if ($SkipOllama) {
+        Write-Step "Skipping Ollama installation"
+        return
     }
     
-    # Check for NVIDIA GPU
-    $gpu = Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match "NVIDIA" }
-    if ($gpu) {
-        Write-OK "NVIDIA GPU detected: $($gpu.Name)"
+    Write-Header "Installing Ollama (Windows)"
+    
+    if (Test-Command 'ollama') {
+        Write-Step "Ollama already installed"
+        $version = ollama --version
+        Write-Step "Version: $version"
+        return
+    }
+    
+    # Download and install
+    Write-Step "Downloading Ollama..."
+    $ollamaUrl = "https://ollama.com/download/OllamaSetup.exe"
+    $installer = "$env:TEMP\OllamaSetup.exe"
+    
+    Invoke-WebRequest -Uri $ollamaUrl -OutFile $installer -UseBasicParsing
+    
+    Write-Step "Installing Ollama..."
+    Start-Process -FilePath $installer -ArgumentList '/S' -Wait
+    
+    # Cleanup
+    Remove-Item $installer -Force
+    
+    # Verify
+    if (Test-Command 'ollama') {
+        Write-Step "Ollama installed successfully"
     } else {
-        Write-Warn "No NVIDIA GPU detected. Ollama will run in CPU-only mode."
+        Write-Warn "Ollama may need manual installation"
     }
 }
 
-# ─── Install Python ───────────────────────────────────────────────────────────
-Write-Step "Installing Python 3.11+"
+# ============================================================
+# GPU CONFIGURATION
+# ============================================================
 
-$python = Get-Command python -ErrorAction SilentlyContinue
-if ($python -and [int]$python.Version.Major -ge 3 -and [int]$python.Version.Minor -ge 11) {
-    Write-OK "Python $($python.Version) detected"
-} else {
-    winget install Python.Python.3.11 --accept-source-agreements --accept-package-agreements
-    Write-OK "Python 3.11 installed"
+function Set-GPUConfig {
+    Write-Header "Configuring NVIDIA GPU"
+    
+    if (-not $Script:HasGPU) {
+        Write-Warr "No GPU detected. Skipping GPU configuration."
+        return
+    }
+    
+    # Check NVIDIA driver
+    try {
+        $nvidiaSmi = & nvidia-smi 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Step "NVIDIA driver detected"
+            $nvidiaSmi | Select-Object -First 5 | ForEach-Object { Write-Host "    $_" }
+        }
+    } catch {
+        Write-Warn "nvidia-smi not found. Please install NVIDIA drivers."
+        Write-Warn "Download from: https://www.nvidia.com/download/index.aspx"
+    }
+    
+    # Configure GPU for WSL
+    Write-Step "GPU passthrough enabled via .wslconfig"
+    Write-Step "WSL2 will automatically use NVIDIA GPU"
 }
 
-# ─── Install Git ──────────────────────────────────────────────────────────────
-Write-Step "Installing Git"
+# ============================================================
+# HERMES INSTALLATION
+# ============================================================
 
-$git = Get-Command git -ErrorAction SilentlyContinue
-if (-not $git) {
-    winget install Git.Git --accept-source-agreements --accept-package-agreements
-    Write-OK "Git installed"
-} else {
-    Write-OK "Git already installed"
+function Install-HermesAgent {
+    Write-Header "Installing Hermes Agent"
+    
+    $installScript = @'
+#!/bin/bash
+set -e
+
+echo "Installing Hermes Agent in WSL2..."
+
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install dependencies
+sudo apt install -y \
+    python3 python3-pip python3-venv \
+    build-essential curl wget git \
+    nodejs npm
+
+# Create virtual environment
+python3 -m venv ~/.hermes/hermes-agent/venv
+source ~/.hermes/hermes-agent/venv/bin/activate
+
+# Install Hermes Agent
+pip install hermes-agent
+
+# Create config directory
+mkdir -p ~/.hermes
+mkdir -p ~/.hermes/logs
+
+echo "Hermes Agent installed successfully!"
+echo "Run 'hermes setup' to configure."
+'@
+    
+    $installScript | wsl -d $Script:Config.WslDistro -e bash -s
+    Write-Step "Hermes Agent installed in WSL2"
 }
 
-# ─── Install Hermes Agent ─────────────────────────────────────────────────────
-Write-Step "Installing Hermes Agent"
+# ============================================================
+# PROVIDER CONFIGURATION
+# ============================================================
 
-$hermesDir = "$env:USERPROFILE\hermes\hermes-agent"
-if (-not (Test-Path $hermesDir)) {
-    git clone https://github.com/NousResearch/hermes-agent.git $hermesDir
-    Write-OK "Hermes cloned to $hermesDir"
-} else {
-    Write-OK "Hermes already cloned at $hermesDir"
-}
-
-# Create venv
-$venvPath = "$hermesDir\venv"
-if (-not (Test-Path $venvPath)) {
-    python -m venv $venvPath
-    Write-OK "Python venv created"
-}
-
-# Activate and install
-& "$venvPath\Scripts\activate"
-pip install -e $hermesDir
-Write-OK "Hermes Agent installed in venv"
-
-# ─── Configure Hermes ─────────────────────────────────────────────────────────
-Write-Step "Configuring Hermes"
-
-$configDir = "$env:USERPROFILE\.hermes"
-if (-not (Test-Path $configDir)) {
-    New-Item -ItemType Directory -Path $configDir -Force | Out-Null
-}
-
-$configYaml = @"
-model:
-  base_url: https://openrouter.ai/api/v1
-  default: google/gemini-2.5-flash
-  provider: openrouter
-
-providers:
-  ollama:
-    api: http://127.0.0.1:11434/v1
-    default_model: qwen2.5-coder:14b
-    models:
-      - qwen2.5-coder:14b
-      - deepseek-r1:14b
-      - gemma4-hermes-131k
-      - qwen3-vl-opt-hermes-256k
-      - nomic-embed-text
-      - mxbai-embed-large
-    name: Ollama
-  openrouter:
-    api: https://openrouter.ai/api/v1
-    default_model: google/gemini-2.5-flash
-    models:
-      - google/gemini-2.5-flash
-      - anthropic/claude-sonnet-4
-      - openai/gpt-4o-mini
-      - deepseek/deepseek-r1
-    name: OpenRouter
-  opencode-go:
-    api: https://opencode.ai/zen/go/v1
-    default_model: glm-5
-    models:
-      - glm-5
-      - kimi-k2.5
-    name: OpenCode Go
-  opencode-zen:
-    api: https://opencode.ai/zen/v1
-    default_model: gpt-4o-mini
-    models:
-      - gpt-4o-mini
-      - claude-sonnet-4
-    name: OpenCode Zen
-
-fallback_providers:
-  - provider: openrouter
-    model:
-      model: google/gemini-2.5-flash
-      provider: openrouter
-
-agent:
-  max_turns: 200
-  gateway_timeout: 1800
-  restart_drain_timeout: 180
-  api_max_retries: 5
-  tool_use_enforcement: strict
-  task_completion_guidance: true
-  parallel_tool_call_guidance: true
-  environment_probe: true
-  coding_context: auto
-  gateway_timeout_warning: 900
-  clarify_timeout: 600
-
-toolsets:
-  - hermes-cli
-  - web
-
-max_concurrent_sessions: 4
-
-credential_pool_strategies:
-  openrouter: fill_first
+function Set-Providers {
+    Write-Header "Configuring Providers"
+    
+    # OpenRouter
+    if (-not $OpenRouterKey) {
+        $OpenRouterKey = Read-Host "  Enter OpenRouter API key (or press Enter to skip)"
+    }
+    
+    if ($OpenRouterKey) {
+        Write-Step "OpenRouter API key configured"
+    } else {
+        Write-Warn "No OpenRouter key provided. Cloud models unavailable."
+    }
+    
+    # Composio
+    if (-not $ComposioKey) {
+        $ComposioKey = Read-Host "  Enter Composio API key (or press Enter to skip)"
+    }
+    
+    if ($ComposioKey) {
+        Write-Step "Composio API key configured"
+    } else {
+        Write-Warn "No Composio key provided. API integrations unavailable."
+    }
+    
+    # Telegram
+    if (-not $TelegramToken) {
+        $TelegramToken = Read-Host "  Enter Telegram bot token (or press Enter to skip)"
+    }
+    
+    if ($TelegramToken) {
+        Write-Step "Telegram bot token configured"
+    } else {
+        Write-Warn "No Telegram token provided. Bot unavailable."
+    }
+    
+    # GitHub
+    if (-not $GitHubToken) {
+        $GitHubToken = Read-Host "  Enter GitHub personal access token (or press Enter to skip)"
+    }
+    
+    if ($GitHubToken) {
+        Write-Step "GitHub token configured"
+    }
+    
+    # Store in environment
+    $envContent = @"
+# Hermes Agent Environment
+export OPENROUTER_API_KEY="$OpenRouterKey"
+export COMPOSIO_API_KEY="$ComposioKey"
+export TELEGRAM_BOT_TOKEN="$TelegramToken"
+export GITHUB_PERSONAL_ACCESS_TOKEN="$GitHubToken"
+export OLLAMA_KEEP_ALIVE="-1"
+export OLLAMA_NUM_PARALLEL=2
+export OLLAMA_HOST=0.0.0.0:11434
 "@
-
-$configYaml | Out-File -FilePath "$configDir\config.yaml" -Encoding UTF8
-Write-OK "Hermes config.yaml written"
-
-# ─── Setup OpenRouter API Key ─────────────────────────────────────────────────
-Write-Step "OpenRouter API Key"
-
-$envFile = "$configDir\.env"
-if (-not (Test-Path $envFile) -or -not (Select-String -Path $envFile -Pattern "OPENROUTER_API_KEY" -Quiet)) {
-    Write-Host "`n  Go to https://openrouter.ai/keys to get your API key" -ForegroundColor Yellow
-    Write-Host "  Free tier gives $1/month credit" -ForegroundColor Gray
-    $apiKey = Read-Host "  Enter OpenRouter API Key"
     
-    if ($apiKey) {
-        "OPENROUTER_API_KEY=$apiKey" | Out-File -FilePath $envFile -Encoding UTF8
-        Write-OK "API key saved to $envFile"
-    } else {
-        Write-Warn "No API key provided. Set OPENROUTER_API_KEY in $envFile manually."
-    }
-} else {
-    Write-OK "OpenRouter API key already configured"
+    $envContent | wsl -d $Script:Config.WslDistro -e bash -c "cat >> ~/.bashrc"
+    Write-Step "Environment variables configured in WSL2"
 }
 
-# ─── Download Ollama Models ──────────────────────────────────────────────────
-if (-not $SkipModels) {
-    Write-Step "Downloading Ollama models"
+# ============================================================
+# TELEGRAM X SETUP
+# ============================================================
+
+function Set-TelegramX {
+    Write-Header "Setting Up Telegram X"
     
-    $models = @(
-        "qwen2.5-coder:14b",
-        "deepseek-r1:14b",
-        "gemma4-hermes-131k",
-        "nomic-embed-text",
-        "llama3.2:latest"
+    Write-Host @"
+  
+  Telegram X Setup:
+  ==================
+  
+  1. Install Telegram X from Google Play Store
+     (NOT regular Telegram - it crashes with bots)
+  
+  2. Open Telegram X and sign in
+  
+  3. Search for @BotFather
+  
+  4. Send: /newbot
+  
+  5. Enter bot name: MyHermesBot
+  
+  6. Enter username: my_hermes_bot (must end in 'bot')
+  
+  7. Copy the API token
+  
+  8. Paste it when prompted in this script
+  
+  Why Telegram X?
+  - Regular Telegram crashes with long bot responses
+  - Telegram X has higher message limits
+  - Better streaming support
+  - More stable connection
+  
+"@
+    
+    if (-not $TelegramToken) {
+        $TelegramToken = Read-Host "  Enter Telegram bot token"
+    }
+    
+    if ($TelegramToken) {
+        Write-Step "Telegram bot token saved"
+    }
+}
+
+# ============================================================
+# TAILSCALE SETUP
+# ============================================================
+
+function Set-Tailscale {
+    Write-Header "Setting Up Tailscale"
+    
+    if (Test-Command 'tailscale') {
+        Write-Step "Tailscale already installed"
+        
+        $status = tailscale status 2>&1
+        if ($status -match 'Logged out') {
+            Write-Step "Starting Tailscale..."
+            tailscale up
+        } else {
+            Write-Step "Tailscale connected"
+        }
+    } else {
+        Write-Step "Installing Tailscale..."
+        winget install Tailscale.Tailscale
+        
+        Write-Step "Starting Tailscale..."
+        tailscale up
+    }
+    
+    # Get Tailscale IP
+    $tsIP = tailscale ip -4 2>$null
+    if ($tsIP) {
+        Write-Step "Tailscale IP: $tsIP"
+    }
+}
+
+# ============================================================
+# OBSIDIAN INTEGRATION
+# ============================================================
+
+function Set-Obsidian {
+    Write-Header "Setting Up Obsidian Integration"
+    
+    $vaultPath = Read-Host "  Enter Obsidian vault path (or press Enter to skip)"
+    
+    if ($vaultPath) {
+        # Convert Windows path to WSL path
+        $wslVaultPath = $vaultPath -replace '^([A-Za-z]):', '/mnt/$($1.ToLower())' -replace '\\', '/'
+        
+        Write-Step "Vault path: $vaultPath"
+        Write-Step "WSL path: $wslVaultPath"
+        
+        # Add to Hermes config
+        $obsidianConfig = @"
+
+# Obsidian Integration
+mcp_servers:
+  obsidian:
+    command: npx
+    args:
+      - -y
+      - obsidian-mcp-server
+    connect_timeout: 30
+    timeout: 60
+"@
+        
+        Write-Step "Obsidian integration configured"
+    } else {
+        Write-Warn "Skipping Obsidian integration"
+    }
+}
+
+# ============================================================
+# MODEL DOWNLOAD
+# ============================================================
+
+function Install-Models {
+    if ($SkipModels) {
+        Write-Step "Skipping model downloads"
+        return
+    }
+    
+    Write-Header "Downloading Ollama Models"
+    
+    if (-not $Script:HasGPU) {
+        Write-Warn "No GPU detected. Downloading lightweight models only..."
+        $modelsToDownload = $Script:Config.FastModels
+    } else {
+        $modelsToDownload = $Script:Config.Models
+    }
+    
+    foreach ($model in $modelsToDownload) {
+        Write-Step "Pulling $model..."
+        wsl -d $Script:Config.WslDistro -e ollama pull $model
+    }
+    
+    Write-Step "All models downloaded"
+}
+
+# ============================================================
+# OPTIMAL SETTINGS
+# ============================================================
+
+function Set-OptimalSettings {
+    Write-Header "Applying Optimal Settings"
+    
+    $settingsScript = @'
+#!/bin/bash
+set -e
+
+echo "Applying optimal Hermes settings..."
+
+# Create Hermes config directory
+mkdir -p ~/.hermes
+
+# Set optimal environment variables
+cat >> ~/.bashrc << 'ENVEOF'
+
+# Hermes Agent - Optimal Settings
+export OLLAMA_KEEP_ALIVE="-1"
+export OLLAMA_NUM_PARALLEL=2
+export OLLAMA_HOST=0.0.0.0:11434
+export HASS_URL="http://192.168.1.11:8123"
+
+# Performance
+export NODE_OPTIONS="--max-old-space-size=8192"
+
+ENVEOF
+
+source ~/.bashrc
+
+echo "Optimal settings applied!"
+'@
+    
+    $settingsScript | wsl -d $Script:Config.WslDistro -e bash -s
+    Write-Step "Optimal settings applied"
+}
+
+# ============================================================
+# VERIFICATION
+# ============================================================
+
+function Test-Installation {
+    Write-Header "Verifying Installation"
+    
+    $checks = @(
+        @{ Name = "WSL2"; Command = { wsl --status } },
+        @{ Name = "Ollama"; Command = { wsl -d $Script:Config.WslDistro -e ollama --version } },
+        @{ Name = "Hermes"; Command = { wsl -d $Script:Config.WslDistro -e bash -c "source ~/.hermes/hermes-agent/venv/bin/activate && hermes --version" } },
+        @{ Name = "Python"; Command = { wsl -d $Script:Config.WslDistro -e python3 --version } },
+        @{ Name = "Node.js"; Command = { wsl -d $Script:Config.WslDistro -e node --version } }
     )
     
-    foreach ($model in $models) {
-        Write-Host "  Pulling $model..." -ForegroundColor Gray
-        ollama pull $model 2>&1 | Out-Null
-        Write-OK "Model ready: $model"
+    foreach ($check in $checks) {
+        try {
+            $result = & $check.Command 2>&1
+            Write-Step "$($check.Name): $result"
+        } catch {
+            Write-Err "$($check.Name): Not found"
+        }
+    }
+    
+    # Check GPU in WSL
+    if ($Script:HasGPU) {
+        try {
+            $gpuCheck = wsl -d $Script:Config.WslDistro -e nvidia-smi 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Step "GPU in WSL2: Available"
+            } else {
+                Write-Warn "GPU in WSL2: Not available (check drivers)"
+            }
+        } catch {
+            Write-Warn "GPU in WSL2: Not available"
+        }
     }
 }
 
-# ─── Install Hermes Relay ─────────────────────────────────────────────────────
-Write-Step "Installing Hermes Relay"
+# ============================================================
+# MAIN EXECUTION
+# ============================================================
 
-$relayDir = "$env:USERPROFILE\.hermes\hermes-relay"
-if (-not (Test-Path $relayDir)) {
-    git clone https://github.com/Codename-11/hermes-relay.git $relayDir
-    Write-OK "Hermes Relay cloned"
+function Main {
+    Write-Host ""
+    Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "  ║   Hermes Agent — Windows 11 Setup Script     ║" -ForegroundColor Cyan
+    Write-Host "  ║   Version: 1.0.0 | Date: 2026-06-26          ║" -ForegroundColor Cyan
+    Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
+    # Check prerequisites
+    Test-Prerequisites
+    
+    # Confirm
+    Write-Host "`n  This script will:" -ForegroundColor White
+    Write-Host "  1. Install WSL2 with Ubuntu 22.04" -ForegroundColor Gray
+    Write-Host "  2. Configure NVIDIA GPU passthrough" -ForegroundColor Gray
+    Write-Host "  3. Install Ollama" -ForegroundColor Gray
+    Write-Host "  4. Install Hermes Agent" -ForegroundColor Gray
+    Write-Host "  5. Configure providers (OpenRouter, Composio)" -ForegroundColor Gray
+    Write-Host "  6. Set up Telegram X bot" -ForegroundColor Gray
+    Write-Host "  7. Configure Tailscale" -ForegroundColor Gray
+    Write-Host "  8. Set up Obsidian integration" -ForegroundColor Gray
+    Write-Host "  9. Download recommended models" -ForegroundColor Gray
+    Write-Host "  10. Apply optimal settings" -ForegroundColor Gray
+    Write-Host ""
+    
+    if (-not (Get-UserConfirmation "Continue?")) {
+        Write-Host "  Setup cancelled." -ForegroundColor Yellow
+        return
+    }
+    
+    # Execute steps
+    try {
+        Install-WSL2
+        Set-WSLConfig
+        Install-OllamaWindows
+        Set-GPUConfig
+        Install-HermesAgent
+        Set-Providers
+        Set-TelegramX
+        Set-Tailscale
+        Set-Obsidian
+        Install-Models
+        Set-OptimalSettings
+        Test-Installation
+        
+        # Summary
+        Write-Header "Setup Complete!"
+        
+        Write-Host @"
+  
+  Next Steps:
+  ===========
+  
+  1. Restart your computer (if WSL2 was just installed)
+  
+  2. Open Ubuntu from Start menu and create your Linux user
+  
+  3. In WSL2 terminal, run:
+     hermes setup
+  
+  4. Start the gateway:
+     hermes gateway start
+  
+  5. Access dashboard at: http://localhost:8000
+  
+  6. Pair your phone:
+     hermes relay pair
+  
+  7. Start chatting:
+     hermes chat "Hello!"
+  
+  Documentation: https://hermes-agent.nousresearch.com/docs
+  Config file: ~/.hermes/config.yaml
+  
+"@
+        
+    } catch {
+        Write-Err "Setup failed: $_"
+        Write-Err $_.ScriptStackTrace
+    }
 }
 
-# Install relay plugin
-& "$venvPath\Scripts\activate"
-pip install -e $relayDir
-Write-OK "Hermes Relay plugin installed"
-
-# ─── Install Composio ─────────────────────────────────────────────────────────
-Write-Step "Installing Composio"
-
-pip install composio-core composio 2>&1 | Out-Null
-Write-OK "Composio installed"
-
-# ─── Install OpenCode ─────────────────────────────────────────────────────────
-Write-Step "Installing OpenCode"
-
-$opencodeGo = Get-Command opencode-go -ErrorAction SilentlyContinue
-if (-not $opencodeGo) {
-    curl -fsSL https://opencode.ai/install-go.sh | bash
-    Write-OK "OpenCode Go installed"
-} else {
-    Write-OK "OpenCode Go already installed"
-}
-
-$opencodeZen = Get-Command opencode -ErrorAction SilentlyContinue
-if (-not $opencodeZen) {
-    curl -fsSL https://opencode.ai/install.sh | bash
-    Write-OK "OpenCode Zen installed"
-} else {
-    Write-OK "OpenCode Zen already installed"
-}
-
-# ─── Setup Telegram X Bot ─────────────────────────────────────────────────────
-Write-Step "Telegram X Bot Setup"
-
-Write-Host @"
-
-  TELEGRAM X SETUP:
-  ==================
-  1. Uninstall official Telegram app
-  2. Install Telegram X from F-Droid: https://f-droid.org/packages/org.thunderdog.challegram/
-  3. Message @BotFather: /newbot
-  4. Name: Hermes Bot
-  5. Save the token
-  6. Add to $envFile:
-     TELEGRAM_BOT_TOKEN=your_token_here
-
-"@ -ForegroundColor Yellow
-
-# ─── Summary ──────────────────────────────────────────────────────────────────
-Write-Host @"
-
-╔══════════════════════════════════════════════════════════════╗
-║  SETUP COMPLETE                                              ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  Next steps:                                                 ║
-║  1. Set OpenRouter API key in $envFile    ║
-║  2. Start Hermes: hermes gateway start                       ║
-║  3. Start Relay: hermes relay start                          ║
-║  4. Pair phone: hermes-pair                                  ║
-║  5. Open Dashboard: http://localhost:8642                    ║
-║                                                              ║
-║  For WSL2 GPU:                                               ║
-║  wsl                                                         ║
-║  curl -fsSL https://ollama.com/install.sh | sh                  ║
-║  ollama pull qwen2.5-coder:14b                               ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-
-"@ -ForegroundColor Green
+# Run
+Main

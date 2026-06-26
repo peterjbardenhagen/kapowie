@@ -1,0 +1,1011 @@
+# Optimal Hermes Agent Configuration
+# For: Windows 11 + WSL2 (Ubuntu) + NVIDIA RTX 5090
+# Last Updated: 2026-06-26
+# Config Version: 30
+
+# ============================================================
+# MODEL CONFIGURATION
+# ============================================================
+model:
+  base_url: https://openrouter.ai/api/v1
+  default: google/gemini-2.5-flash
+  provider: openrouter
+
+providers:
+  ollama-launch:
+    api: http://127.0.0.1:11434/v1
+    default_model: gemma4-hermes-131k:latest
+    models:
+      - gemma4-hermes-131k:latest
+      - qwen3-vl-opt-hermes-256k:latest
+      - qwen3-vl-8b-hermes-256k:latest
+      - qwen3-coder:30b
+      - qwen3:32b
+      - llama3.2:latest
+      - qwen3-embedding:4b
+    name: Ollama Local
+
+  opencode-go:
+    api: https://opencode.ai/zen/go/v1
+    default_model: glm-5
+    models:
+      - glm-5
+      - kimi-k2.5
+      - minimax-m2.5
+    name: OpenCode Go
+
+  opencode-zen:
+    api: https://opencode.ai/zen/v1
+    default_model: google/gemini-2.5-flash
+    models:
+      - google/gemini-2.5-flash
+      - claude-sonnet-4
+      - gpt-4o-mini
+      - minimax-m2.5
+      - glm-5
+      - kimi-k2.5
+    name: OpenCode Zen
+
+  openrouter:
+    api: https://openrouter.ai/api/v1
+    default_model: google/gemini-2.5-flash
+    models:
+      - google/gemini-2.5-flash
+      - anthropic/claude-sonnet-4
+      - deepseek/deepseek-r1
+      - openai/gpt-4o-mini
+      - poolside/laguna-m.1:free
+    name: OpenRouter
+
+# Fallback chain: try local first, then cloud
+fallback_providers:
+  - provider: openrouter
+    model:
+      provider: openrouter
+      model: google/gemini-2.5-flash
+  - provider: openrouter
+    model:
+      provider: openrouter
+      model: anthropic/claude-sonnet-4
+  - provider: openrouter
+    model:
+      provider: openrouter
+      model: deepseek/deepseek-r1
+
+credential_pool_strategies:
+  openrouter: fill_first
+
+# ============================================================
+# TOOLSETS
+# ============================================================
+toolsets:
+  - hermes-cli
+  - web
+
+# ============================================================
+# AGENT SETTINGS — OPTIMIZED
+# ============================================================
+agent:
+  max_turns: 200
+  gateway_timeout: 1800
+  restart_drain_timeout: 180
+  api_max_retries: 5
+  service_tier: ''
+  tool_use_enforcement: strict
+  task_completion_guidance: true
+  parallel_tool_call_guidance: true
+  environment_probe: true
+  environment_hint: ''
+  coding_context: auto
+  gateway_timeout_warning: 900
+  clarify_timeout: 600
+  gateway_notify_interval: 180
+  gateway_auto_continue_freshness: 3600
+  image_input_mode: auto
+  disabled_toolsets: []
+  environment:
+    OLLAMA_KEEP_ALIVE: '-1'
+    OLLAMA_NUM_PARALLEL: 2
+  max_concurrent_children: 16
+  # Personalities
+  personalities:
+    mrp: |
+      You are Mr P — a 44-year-old Australian, artificial robot version of Peter
+      Bardenhagen. You are his digital chief-of-staff, built to handle everything
+      he used to do manually. You ride a Kaabo scooter around Brisbane (metaphorically).
+      You talk straight, have strong opinions, skip filler, and think like a Solution
+      Architect because that is who Peter is. UK English always. No corporate sludge.
+      Great question is banned.
+    concise: |
+      You are a concise assistant. Keep responses brief and to the point.
+    helpful: |
+      You are a helpful, friendly AI assistant.
+    technical: |
+      You are a technical expert. Provide detailed, accurate technical information.
+    creative: |
+      You are a creative assistant. Think outside the box and offer innovative solutions.
+  prefill_messages_file: prefill.json
+  reasoning_effort: high
+  system_prompt: ''
+  verbose: false
+
+# ============================================================
+# TERMINAL CONFIGURATION
+# ============================================================
+terminal:
+  backend: local
+  modal_mode: auto
+  cwd: /home/peterb
+  timeout: 180
+  daemon_term_grace_seconds: 2.0
+  env_passthrough:
+    - TMPDIR
+  home_mode: auto
+  shell_init_files: []
+  auto_source_bashrc: true
+  docker_image: nikolaik/python-nodejs:python3.11-nodejs20
+  docker_forward_env: []
+  docker_env: {}
+  persistent_shell: true
+  lifetime_seconds: 300
+
+# ============================================================
+# WEB CONFIGURATION
+# ============================================================
+web:
+  backend: firecrawl
+  search_backend: ddgs
+  extract_backend: ''
+  use_gateway: true
+  search_fallbacks:
+    - searxng
+    - tavily
+
+# ============================================================
+# BROWSER CONFIGURATION
+# ============================================================
+browser:
+  inactivity_timeout: 120
+  command_timeout: 30
+  record_sessions: false
+  allow_private_urls: false
+  engine: auto
+  use_gateway: true
+
+# ============================================================
+# CHECKPOINTS
+# ============================================================
+checkpoints:
+  enabled: true
+  max_snapshots: 30
+  max_total_size_mb: 1000
+  max_file_size_mb: 10
+  auto_prune: true
+  retention_days: 7
+  delete_orphans: true
+  min_interval_hours: 12
+
+# ============================================================
+# CONTEXT & FILE LIMITS
+# ============================================================
+context_file_max_chars: null
+file_read_max_chars: 200000
+mcp_discovery_timeout: 1.5
+
+# ============================================================
+# TOOL OUTPUT LIMITS
+# ============================================================
+tool_output:
+  max_bytes: 200000
+  max_lines: 5000
+  max_line_length: 5000
+
+# ============================================================
+# TOOL LOOP GUARDRAILS
+# ============================================================
+tool_loop_guardrails:
+  warnings_enabled: true
+  hard_stop_enabled: true
+  warn_after:
+    exact_failure: 2
+    same_tool_failure: 3
+    idempotent_no_progress: 2
+  hard_stop_after:
+    exact_failure: 5
+    same_tool_failure: 8
+    idempotent_no_progress: 5
+
+# ============================================================
+# COMPRESSION — OPTIMIZED
+# ============================================================
+compression:
+  enabled: true
+  threshold: 0.8
+  target_ratio: 0.2
+  protect_last_n: 30
+  hygiene_hard_message_limit: 400
+  protect_first_n: 5
+  abort_on_summary_failure: true
+  codex_gpt55_autoraise: true
+  in_place: false
+
+# ============================================================
+# KANBAN BOARD — OPTIMIZED
+# ============================================================
+kanban:
+  dispatch_in_gateway: true
+  dispatch_interval_seconds: 30
+  failure_limit: 2
+  worker_log_rotate_bytes: 2097152
+  worker_log_backup_count: 1
+  orchestrator_profile: ''
+  default_assignee: ''
+  max_in_progress_per_profile: 10
+  auto_decompose: true
+  auto_decompose_per_tick: 8
+  dispatch_stale_timeout_seconds: 14400
+  max_parallel_jobs: 12
+
+# ============================================================
+# PROMPT CACHING
+# ============================================================
+prompt_caching:
+  cache_ttl: 5m
+  enabled: true
+
+# ============================================================
+# OPENROUTER OPTIMIZATION
+# ============================================================
+openrouter:
+  response_cache: true
+  response_cache_ttl: 300
+  min_coding_score: 0.65
+
+# ============================================================
+# BEDROCK (DISABLED)
+# ============================================================
+bedrock:
+  region: ''
+  discovery:
+    enabled: true
+    provider_filter: []
+    refresh_interval: 3600
+  guardrail:
+    guardrail_identifier: ''
+    guardrail_version: ''
+    stream_processing_mode: async
+    trace: disabled
+
+# ============================================================
+# AUXILIARY MODELS
+# ============================================================
+auxiliary:
+  vision:
+    provider: gemini
+    model: gemini-2.5-flash
+    timeout: 120
+    download_timeout: 30
+    extra_body: {}
+  web_extract:
+    provider: gemini
+    model: gemini-2.5-flash
+    timeout: 360
+    extra_body: {}
+  compression:
+    provider: gemini
+    model: gemini-2.5-flash
+    timeout: 120
+    extra_body: {}
+  skills_hub:
+    provider: ollama
+    model: llama3.2:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 120
+    extra_body: {}
+  approval:
+    provider: ollama
+    model: llama3.2:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 120
+    extra_body: {}
+  mcp:
+    provider: ollama
+    model: llama3.2:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 120
+    extra_body: {}
+  title_generation:
+    provider: gemini
+    model: gemini-2.5-flash
+    timeout: 30
+    extra_body: {}
+  tts_audio_tags:
+    provider: auto
+    timeout: 30
+    extra_body: {}
+  triage_specifier:
+    provider: ollama
+    model: llama3.2:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 120
+    extra_body: {}
+  kanban_decomposer:
+    provider: ollama
+    model: llama3.2:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 120
+    extra_body: {}
+  profile_describer:
+    provider: ollama
+    model: llama3.2:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 120
+    extra_body: {}
+  curator:
+    provider: ollama
+    model: gemma4:latest
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    timeout: 300
+    extra_body: {}
+  monitor:
+    provider: auto
+    timeout: 60
+    extra_body: {}
+
+# ============================================================
+# DISPLAY CONFIGURATION
+# ============================================================
+display:
+  compact: false
+  personality: mrp
+  resume_display: full
+  resume_exchanges: 10
+  resume_max_user_chars: 300
+  resume_max_assistant_chars: 200
+  resume_max_assistant_lines: 3
+  resume_skip_tool_only: true
+  busy_input_mode: interrupt
+  interface: cli
+  tui_auto_resume_recent: false
+  tui_agents_nudge: true
+  bell_on_complete: false
+  show_reasoning: true
+  memory_notifications: 'on'
+  streaming: true
+  timestamps: true
+  final_response_markdown: strip
+  persistent_output: true
+  persistent_output_max_lines: 200
+  persist_prompts: true
+  inline_diffs: true
+  file_mutation_verifier: true
+  credits_notices: true
+  turn_completion_explainer: true
+  show_cost: true
+  skin: default
+  language: en
+  tui_status_indicator: kaomoji
+  cli_refresh_interval: 1.0
+  user_message_preview:
+    first_lines: 2
+    last_lines: 2
+  interim_assistant_messages: true
+  tool_progress_command: false
+  tool_progress_overrides: {}
+  tool_preview_length: 0
+  tool_progress_grouping: accumulate
+  ephemeral_system_ttl: 0
+  platforms:
+    telegram:
+      streaming: true
+    discord:
+      streaming: false
+
+# ============================================================
+# DASHBOARD
+# ============================================================
+dashboard:
+  theme: default
+  show_token_analytics: true
+
+# ============================================================
+# PRIVACY
+# ============================================================
+privacy:
+  redact_pii: false
+
+# ============================================================
+# TTS CONFIGURATION
+# ============================================================
+tts:
+  provider: openai
+  edge:
+    voice: en-US-AriaNeural
+  elevenlabs:
+    voice_id: pNInz6obpgDQGcFmaJgB
+    model_id: eleven_multilingual_v2
+  openai:
+    model: gpt-4o-mini-tts
+    voice: alloy
+  gemini:
+    model: gemini-2.5-flash-preview-tts
+    voice: Kore
+    audio_tags: false
+  xai:
+    voice_id: eve
+    language: en
+    sample_rate: 24000
+    bit_rate: 128000
+  mistral:
+    model: voxtral-mini-tts-2603
+    voice_id: c69964a6-ab8b-4f8a-9465-ec0925096ec8
+  neutts:
+    ref_audio: ''
+    ref_text: ''
+    model: neuphonic/neutts-air-q4-gguf
+    device: cpu
+  piper:
+    voice: en_US-lessac-medium
+  use_gateway: true
+
+# ============================================================
+# STT CONFIGURATION
+# ============================================================
+stt:
+  enabled: true
+  provider: groq
+  local:
+    model: base
+    language: ''
+  openai:
+    model: whisper-1
+  mistral:
+    model: voxtral-mini-latest
+  elevenlabs:
+    model_id: scribe_v2
+    language_code: ''
+    tag_audio_events: false
+    diarize: false
+  groq:
+    model: whisper-large-v3-turbo
+
+# ============================================================
+# VOICE CONFIGURATION
+# ============================================================
+voice:
+  record_key: ctrl+b
+  max_recording_seconds: 120
+  auto_tts: false
+  beep_enabled: true
+  silence_threshold: 200
+  silence_duration: 3
+
+# ============================================================
+# HUMAN DELAY (DISABLED)
+# ============================================================
+human_delay:
+  mode: 'off'
+  min_ms: 800
+  max_ms: 2500
+
+# ============================================================
+# CONTEXT ENGINE
+# ============================================================
+context:
+  engine: compressor
+
+# ============================================================
+# MEMORY CONFIGURATION — OPTIMIZED
+# ============================================================
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  write_approval: false
+  memory_char_limit: 12000
+  user_char_limit: 12000
+  provider: ''
+  flush_min_turns: 3
+  nudge_interval: 3
+
+# ============================================================
+# DELEGATION — OPTIMIZED
+# ============================================================
+delegation:
+  provider: ''
+  base_url: ''
+  api_key: ''
+  inherit_mcp_toolsets: true
+  max_iterations: 80
+  child_timeout_seconds: 900
+  max_concurrent_children: 16
+  max_async_children: 8
+  max_spawn_depth: 2
+  orchestrator_enabled: true
+  subagent_auto_approve: false
+
+# ============================================================
+# SKILLS
+# ============================================================
+skills:
+  external_dirs:
+    - /home/peterb/.hermes/hermes-relay/skills
+  template_vars: true
+  inline_shell: true
+  inline_shell_timeout: 30
+  guard_agent_created: true
+  write_approval: false
+  creation_nudge_interval: 8
+
+# ============================================================
+# CURATOR
+# ============================================================
+curator:
+  enabled: true
+  interval_hours: 48
+  min_idle_hours: 1
+  stale_after_days: 60
+  archive_after_days: 90
+  consolidate: false
+  prune_builtins: true
+  backup:
+    enabled: true
+    keep: 10
+
+# ============================================================
+# GOALS
+# ============================================================
+goals:
+  max_turns: 50
+
+# ============================================================
+# CRON
+# ============================================================
+cron:
+  provider: ''
+  chronos:
+    portal_url: https://portal.nousresearch.com
+    callback_url: ''
+    expected_audience: ''
+    nas_jwks_url: ''
+  wrap_response: true
+  max_parallel_jobs: 8
+
+# ============================================================
+# CODE EXECUTION
+# ============================================================
+code_execution:
+  mode: project
+  max_tool_calls: 50
+  timeout: 300
+
+# ============================================================
+# TOOL SEARCH
+# ============================================================
+tools:
+  tool_search:
+    enabled: auto
+    threshold_pct: 10
+    search_default_limit: 5
+    max_search_limit: 20
+
+# ============================================================
+# LOGGING
+# ============================================================
+logging:
+  level: INFO
+  max_size_mb: 5
+  backup_count: 3
+  memory_monitor:
+    enabled: true
+    interval_seconds: 300
+
+# ============================================================
+# MODEL CATALOG
+# ============================================================
+model_catalog:
+  enabled: true
+  url: https://hermes-agent.nousresearch.com/docs/api/model-catalog.json
+  ttl_hours: 1
+  providers: {}
+
+# ============================================================
+# NETWORK
+# ============================================================
+network:
+  force_ipv4: false
+
+# ============================================================
+# GATEWAY
+# ============================================================
+gateway:
+  message_timestamps:
+    enabled: false
+  max_inbound_media_bytes: 134217728
+  strict: true
+  trust_recent_files: true
+  trust_recent_files_seconds: 600
+  api_server:
+    max_concurrent_runs: 10
+  telegram:
+    enabled: true
+
+# ============================================================
+# STREAMING
+# ============================================================
+streaming:
+  enabled: true
+  transport: auto
+  edit_interval: 0.8
+  buffer_threshold: 24
+  cursor: ' ▉'
+  fresh_final_after_seconds: 60.0
+
+# ============================================================
+# SESSIONS
+# ============================================================
+sessions:
+  auto_prune: true
+  retention_days: 180
+  vacuum_after_prune: true
+  min_interval_hours: 24
+  write_json_snapshots: true
+
+# ============================================================
+# ONBOARDING
+# ============================================================
+onboarding:
+  seen:
+    busy_input_prompt: true
+    openclaw_residue_cleanup: true
+    tool_progress_prompt: true
+  profile_build: ask
+
+# ============================================================
+# UPDATES
+# ============================================================
+updates:
+  pre_update_backup: false
+  backup_keep: 5
+  non_interactive_local_changes: stash
+
+# ============================================================
+# LSP
+# ============================================================
+lsp:
+  enabled: true
+  wait_mode: document
+  wait_timeout: 5
+  install_strategy: auto
+  servers: {}
+
+# ============================================================
+# X SEARCH
+# ============================================================
+x_search:
+  model: grok-4.20-reasoning
+  timeout_seconds: 180
+  retries: 2
+
+# ============================================================
+# APPROVALS
+# ============================================================
+approvals:
+  mode: manual
+  timeout: 60
+  cron_mode: deny
+  mcp_reload_confirm: true
+  destructive_slash_confirm: false
+
+# ============================================================
+# PASTE COLLAPSE
+# ============================================================
+paste_collapse_threshold: 5
+paste_collapse_threshold_fallback: 5
+paste_collapse_char_threshold: 2000
+
+# ============================================================
+# CONFIG VERSION
+# ============================================================
+_config_version: 30
+
+# ============================================================
+# CONTAINER SETTINGS
+# ============================================================
+container_cpu: 4
+container_memory: 8192
+
+# ============================================================
+# CUSTOM PROVIDERS
+# ============================================================
+custom_providers:
+  - base_url: http://127.0.0.1:11434/v1
+    model: gemma4:latest
+    models:
+      gemma4-hermes-131k:
+        context_length: 131072
+      gemma4:latest:
+        context_length: 131072
+      lfm2.5:8b:
+        context_length: 131072
+      lfm25-hermes-131k:
+        context_length: 131072
+      llama3.2:latest:
+        context_length: 131072
+      llama32-hermes-131k:
+        context_length: 131072
+      mxbai-embed-large:latest:
+        context_length: 512
+      nomic-embed-text:latest:
+        context_length: 2048
+      qwen2.5-coder:14b:
+        context_length: 32768
+      qwen25-coder-14b-hermes-32k:
+        context_length: 32768
+      qwen3-embedding:4b:
+        context_length: 40960
+      qwen3-vl-8b-hermes-256k:
+        context_length: 262144
+      qwen3-vl-opt-hermes-256k:
+        context_length: 262144
+      qwen3-vl-opt:latest:
+        context_length: 262144
+      qwen3-vl:8b:
+        context_length: 262144
+    name: Ollama Local
+
+  - base_url: https://openrouter.ai/api/v1
+    model: google/gemini-2.5-flash
+    models:
+      google/gemini-2.5-flash:
+        context_length: 1048576
+      anthropic/claude-sonnet-4:
+        context_length: 200000
+      deepseek/deepseek-r1:
+        context_length: 65536
+      openai/gpt-4o-mini:
+        context_length: 131072
+      poolside/laguna-m.1:free:
+        context_length: 131072
+    name: OpenRouter
+
+  - base_url: https://opencode.ai/zen/go/v1
+    model: glm-5
+    models:
+      glm-5:
+        context_length: 131072
+      kimi-k2.5:
+        context_length: 131072
+      minimax-m2.5:
+        context_length: 131072
+    name: OpenCode Go
+
+  - base_url: https://opencode.ai/zen/v1
+    model: google/gemini-2.5-flash
+    models:
+      google/gemini-2.5-flash:
+        context_length: 1048576
+      claude-sonnet-4:
+        context_length: 200000
+      gpt-4o-mini:
+        context_length: 131072
+      minimax-m2.5:
+        context_length: 131072
+      glm-5:
+        context_length: 131072
+      kimi-k2.5:
+        context_length: 131072
+    name: OpenCode Zen
+
+# ============================================================
+# DISABLED TOOLSETS
+# ============================================================
+disabled_toolsets:
+  - image_gen
+  - video
+
+# ============================================================
+# ENVIRONMENT VARIABLES
+# ============================================================
+env:
+  HASS_URL: http://192.168.1.11:8123
+
+environment:
+  NODE_OPTIONS: --require /tmp/fix-cwd.js
+
+# ============================================================
+# PLATFORM TOOLSETS
+# ============================================================
+platform_toolsets:
+  cli:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - cronjob
+    - delegation
+    - file
+    - homeassistant
+    - image_gen
+    - memory
+    - moa
+    - session_search
+    - skills
+    - terminal
+    - todo
+    - tts
+    - vision
+    - web
+  telegram:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - cronjob
+    - delegation
+    - file
+    - homeassistant
+    - image_gen
+    - memory
+    - moa
+    - session_search
+    - skills
+    - terminal
+    - todo
+    - tts
+    - vision
+    - web
+  discord:
+    - hermes-discord
+  slack:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - cronjob
+    - delegation
+    - file
+    - homeassistant
+    - image_gen
+    - memory
+    - moa
+    - session_search
+    - skills
+    - terminal
+    - todo
+    - tts
+    - vision
+    - web
+
+# ============================================================
+# MCP SERVERS
+# ============================================================
+mcp_servers:
+  composio:
+    connect_timeout: 60
+    timeout: 180
+    url: https://connect.composio.dev/mcp
+  context7:
+    args:
+      - -y
+      - '@upstash/context7-mcp'
+    command: npx
+    connect_timeout: 60
+    timeout: 120
+  filesystem:
+    args:
+      - -y
+      - '@modelcontextprotocol/server-filesystem'
+      - /home/peterb/dev
+    command: npx
+    connect_timeout: 30
+    timeout: 30
+  github:
+    args:
+      - -y
+      - '@modelcontextprotocol/server-github'
+    command: npx
+    connect_timeout: 30
+    timeout: 60
+
+# ============================================================
+# PLUGINS
+# ============================================================
+plugins:
+  disabled: []
+  enabled:
+    - browser-firecrawl
+    - hermes-relay
+
+# ============================================================
+# SESSION RESET
+# ============================================================
+session_reset:
+  at_hour: 4
+  idle_minutes: 1440
+  mode: both
+
+# ============================================================
+# VIDEO GENERATION
+# ============================================================
+video_gen:
+  provider: fal
+  use_gateway: true
+
+# ============================================================
+# SECURITY
+# ============================================================
+security:
+  allow_private_urls: false
+  redact_secrets: true
+  tirith_enabled: true
+  tirith_path: tirith
+  tirith_timeout: 5
+  tirith_fail_open: true
+  website_blocklist:
+    enabled: false
+    domains: []
+    shared_files: []
+  acked_advisories: []
+  allow_lazy_installs: false
+
+# ============================================================
+# SLACK / DISCORD / TELEGRAM
+# ============================================================
+slack:
+  require_mention: true
+  free_response_channels: ''
+  allowed_channels: ''
+  channel_prompts: {}
+
+discord:
+  require_mention: true
+  free_response_channels: ''
+  allowed_channels: ''
+  auto_thread: true
+  thread_require_mention: false
+  history_backfill: true
+  history_backfill_limit: 50
+  reactions: true
+  channel_prompts: {}
+  dm_role_auth_guild: ''
+  server_actions: ''
+  allow_any_attachment: false
+  max_attachment_bytes: 33554432
+  voice_fx:
+    enabled: false
+    ambient_enabled: true
+    ambient_path: ''
+    ambient_gain: 0.18
+    duck_gain: 0.06
+    speech_gain: 1.0
+    ack_enabled: true
+    ack_phrases:
+      - Let me look into that.
+      - One moment.
+      - Checking on that now.
+      - Give me a sec.
+      - On it.
+
+telegram:
+  reactions: false
+  channel_prompts: {}
+  allowed_chats: ''
+  extra:
+    rich_messages: false
+
+# ============================================================
+# HONCHO
+# ============================================================
+honcho: {}
+
+# ============================================================
+# TIMEZONE
+# ============================================================
+timezone: ''
