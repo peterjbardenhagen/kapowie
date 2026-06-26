@@ -94,6 +94,7 @@ kapowie/
 │   ├── build-extension.sh  # Build & package Chrome extension
 │   └── publish-extension.sh # Publish to Chrome Web Store
 ├── docs/
+│   ├── brand-guidelines.md # Logo, palette, and visual direction
 │   ├── deployment-guide.md  # Release and deployment notes
 │   ├── deployment-guide-research.md # Background research for deployment
 │   ├── security/

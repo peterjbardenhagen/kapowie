@@ -5,6 +5,7 @@
   import ReStreamUI from './components/ReStreamUI.svelte';
   import Settings from './components/Settings.svelte';
   import { currentPage } from './stores/app';
+  import logoMark from '../../shared/assets/kapowie-mark.svg';
 
   let pages = ['capture', 'recordings', 'restream', 'settings'];
 
@@ -15,7 +16,13 @@
 
 <div class="app">
   <header class="app-header">
-    <h1>Kapowie</h1>
+    <div class="brand">
+      <img class="brand-mark" src={logoMark} alt="Kapowie" />
+      <div class="brand-copy">
+        <h1>Kapowie</h1>
+        <p>Capture. Re-stream. Anywhere.</p>
+      </div>
+    </div>
     <nav class="nav-tabs">
       {#each pages as page}
         <button
@@ -50,23 +57,54 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
 
   .app-header {
-    background: #1a1a2e;
-    color: #eee;
+    background:
+      radial-gradient(circle at top left, rgba(122, 44, 255, 0.2), transparent 35%),
+      linear-gradient(135deg, #070b2a 0%, #10183e 55%, #0b1030 100%);
+    color: #f6f7fb;
     padding: 1rem 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 2px solid #e94560;
+    border-bottom: 1px solid rgba(93, 123, 255, 0.28);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 0 10px rgba(122, 44, 255, 0.35));
+  }
+
+  .brand-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
 
   .app-header h1 {
     margin: 0;
-    font-size: 1.4rem;
-    color: #e94560;
+    font-size: 1.25rem;
+    color: #f6f7fb;
+    letter-spacing: 0.01em;
+  }
+
+  .brand-copy p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #a0a8c0;
   }
 
   .nav-tabs {
@@ -75,9 +113,9 @@
   }
 
   .nav-tabs button {
-    background: transparent;
-    border: 1px solid #444;
-    color: #ccc;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(160, 168, 192, 0.2);
+    color: #c8d0e8;
     padding: 0.4rem 1rem;
     border-radius: 4px;
     cursor: pointer;
@@ -86,13 +124,13 @@
   }
 
   .nav-tabs button:hover {
-    border-color: #e94560;
+    border-color: rgba(69, 176, 255, 0.9);
     color: #fff;
   }
 
   .nav-tabs button.active {
-    background: #e94560;
-    border-color: #e94560;
+    background: linear-gradient(135deg, #7a2cff 0%, #45b0ff 100%);
+    border-color: transparent;
     color: #fff;
   }
 
@@ -100,16 +138,18 @@
     flex: 1;
     overflow-y: auto;
     padding: 1.5rem;
-    background: #16213e;
-    color: #eee;
+    background:
+      radial-gradient(circle at top right, rgba(122, 44, 255, 0.16), transparent 25%),
+      linear-gradient(180deg, #070b2a 0%, #10183e 100%);
+    color: #f6f7fb;
   }
 
   .app-footer {
-    background: #1a1a2e;
-    color: #888;
+    background: rgba(7, 11, 42, 0.92);
+    color: #8d96b8;
     padding: 0.5rem 1.5rem;
     font-size: 0.8rem;
     text-align: center;
-    border-top: 1px solid #333;
+    border-top: 1px solid rgba(160, 168, 192, 0.12);
   }
 </style>

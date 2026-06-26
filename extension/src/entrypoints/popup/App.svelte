@@ -3,6 +3,7 @@
   import type { StreamInfo, Recording } from '../../types';
   import StreamList from '../../components/StreamList.svelte';
   import RecordingControls from '../../components/RecordingControls.svelte';
+  import logoMark from '../../../../shared/assets/kapowie-mark.svg';
 
   let streams: StreamInfo[] = [];
   let recordings: Recording[] = [];
@@ -177,8 +178,11 @@
 
 <div class="popup-container">
   <header class="popup-header">
-    <h1>🎬 Kapowie</h1>
-    <p class="subtitle">Stream Recorder</p>
+    <img class="brand-mark" src={logoMark} alt="Kapowie" />
+    <div>
+      <h1>Kapowie</h1>
+      <p class="subtitle">Capture. Re-stream. Anywhere.</p>
+    </div>
   </header>
 
   <nav class="tabs">
@@ -256,5 +260,40 @@
 </div>
 
 <style>
-  /* Inline critical styles - full styles in global.css */
+  .popup-container {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(122, 44, 255, 0.18), transparent 30%),
+      linear-gradient(180deg, #070b2a 0%, #10183e 100%);
+    color: #f6f7fb;
+  }
+
+  .popup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(160, 168, 192, 0.14);
+    background: rgba(7, 11, 42, 0.92);
+  }
+
+  .brand-mark {
+    width: 2.4rem;
+    height: 2.4rem;
+    filter: drop-shadow(0 0 8px rgba(122, 44, 255, 0.4));
+  }
+
+  .popup-header h1 {
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+
+  .subtitle {
+    margin: 0.15rem 0 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #a0a8c0;
+  }
 </style>
