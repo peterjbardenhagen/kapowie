@@ -9,6 +9,11 @@ export interface StreamInfo {
   pageUrl?: string;
   pageTitle?: string;
   detectedAt?: number;
+  metadata?: {
+    videoId?: string;
+    platform?: string;
+    playerUrl?: string;
+  };
 }
 
 export interface Recording {
