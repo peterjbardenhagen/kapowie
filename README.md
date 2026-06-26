@@ -1,5 +1,7 @@
 # 🎬 Kapowie
 
+[![Deploy to Vercel](https://github.com/peterjbardenhagen/kapowie/actions/workflows/deploy-vercel.yml/badge.svg)](https://github.com/peterjbardenhagen/kapowie/actions/workflows/deploy-vercel.yml)
+
 **AI-powered live stream recorder & re-streamer**
 
 Record live streams from any website. Re-stream to your TV, phone, or any device in near real-time.
