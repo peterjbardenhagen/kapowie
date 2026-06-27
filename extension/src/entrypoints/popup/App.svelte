@@ -12,8 +12,15 @@
   let autoDetect = true;
   let restreamEnabled = false;
   let restreamPort = 8124;
+  let showNetworkDropdown = false;
 
   let refreshInterval: number;
+
+  const networkLinks = [
+    { name: 'FreeLiveSports.ai', url: 'https://freelivesports.ai', icon: '🏆' },
+    { name: 'FightStream.ai', url: 'https://fightstream.ai', icon: '🥊' },
+    { name: 'ProStream.ai', url: 'https://prostream.ai', icon: '📡' },
+  ];
 
   onMount(async () => {
     await refreshStreams();
@@ -26,16 +33,27 @@
 
     // Listen for real-time stream detection
     chrome.runtime.onMessage.addListener(handleMessage);
+
+    // Close dropdown on outside click
+    document.addEventListener('click', closeNetworkDropdown);
   });
 
   onDestroy(() => {
     clearInterval(refreshInterval);
     chrome.runtime.onMessage.removeListener(handleMessage);
+    document.removeEventListener('click', closeNetworkDropdown);
   });
 
   function handleMessage(message: { type: string; payload?: any }) {
     if (message.type === 'STREAM_DETECTED') {
       refreshStreams();
+    }
+  }
+
+  function closeNetworkDropdown(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.network-dropdown')) {
+      showNetworkDropdown = false;
     }
   }
 
@@ -172,6 +190,11 @@
     });
   }
 
+  function openNetworkUrl(url: string) {
+    chrome.tabs.create({ url });
+    showNetworkDropdown = false;
+  }
+
   $: activeRecordings = recordings.filter((r) => r.status === 'recording');
   $: completedRecordings = recordings.filter((r) => r.status !== 'recording');
 </script>
@@ -179,9 +202,30 @@
 <div class="popup-container">
   <header class="popup-header">
     <img class="brand-mark" src={logoMark} alt="Kapowie" />
-    <div>
+    <div class="header-title">
       <h1>Kapowie</h1>
       <p class="subtitle">Capture. Re-stream. Anywhere.</p>
+    </div>
+    <div class="network-dropdown">
+      <button
+        class="network-btn"
+        on:click|stopPropagation={() => showNetworkDropdown = !showNetworkDropdown}
+      >
+        Our Network ▾
+      </button>
+      {#if showNetworkDropdown}
+        <div class="network-menu">
+          {#each networkLinks as link}
+            <button
+              class="network-item"
+              on:click={() => openNetworkUrl(link.url)}
+            >
+              <span class="network-icon">{link.icon}</span>
+              <span>{link.name}</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
   </header>
 
@@ -283,6 +327,11 @@
     filter: drop-shadow(0 0 8px rgba(122, 44, 255, 0.4));
   }
 
+  .header-title {
+    flex: 1;
+    min-width: 0;
+  }
+
   .popup-header h1 {
     font-size: 1rem;
     letter-spacing: 0.01em;
@@ -295,5 +344,66 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: #a0a8c0;
+  }
+
+  /* Network Dropdown */
+  .network-dropdown {
+    position: relative;
+  }
+
+  .network-btn {
+    background: linear-gradient(135deg, rgba(122, 44, 255, 0.2), rgba(69, 176, 255, 0.2));
+    border: 1px solid rgba(122, 44, 255, 0.4);
+    color: #c8d0e8;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .network-btn:hover {
+    background: linear-gradient(135deg, rgba(122, 44, 255, 0.35), rgba(69, 176, 255, 0.35));
+    border-color: rgba(122, 44, 255, 0.7);
+    color: #fff;
+  }
+
+  .network-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #10183e;
+    border: 1px solid rgba(122, 44, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.35rem 0;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+  }
+
+  .network-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.55rem 0.9rem;
+    background: none;
+    border: none;
+    color: #c8d0e8;
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+  }
+
+  .network-item:hover {
+    background: rgba(122, 44, 255, 0.15);
+    color: #fff;
+  }
+
+  .network-icon {
+    font-size: 1rem;
   }
 </style>

@@ -8,9 +8,36 @@
   import logoMark from '../../shared/assets/kapowie-mark.svg';
 
   let pages = ['capture', 'recordings', 'restream', 'settings'];
+  let showNetworkDropdown = false;
+
+  const networkLinks = [
+    { name: 'FreeLiveSports.ai', url: 'https://freelivesports.ai', icon: '🏆' },
+    { name: 'FightStream.ai', url: 'https://fightstream.ai', icon: '🥊' },
+    { name: 'ProStream.ai', url: 'https://prostream.ai', icon: '📡' },
+  ];
 
   function navigate(page: string) {
     currentPage.set(page);
+  }
+
+  function openNetworkUrl(url: string) {
+    window.open(url, '_blank');
+    showNetworkDropdown = false;
+  }
+
+  onMount(() => {
+    document.addEventListener('click', closeNetworkDropdown);
+  });
+
+  onDestroy(() => {
+    document.removeEventListener('click', closeNetworkDropdown);
+  });
+
+  function closeNetworkDropdown(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.network-dropdown')) {
+      showNetworkDropdown = false;
+    }
   }
 </script>
 
@@ -32,6 +59,27 @@
           {page.charAt(0).toUpperCase() + page.slice(1)}
         </button>
       {/each}
+      <div class="network-dropdown">
+        <button
+          class="network-btn"
+          on:click|stopPropagation={() => showNetworkDropdown = !showNetworkDropdown}
+        >
+          Our Network ▾
+        </button>
+        {#if showNetworkDropdown}
+          <div class="network-menu">
+            {#each networkLinks as link}
+              <button
+                class="network-item"
+                on:click={() => openNetworkUrl(link.url)}
+              >
+                <span class="network-icon">{link.icon}</span>
+                <span>{link.name}</span>
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </nav>
   </header>
 
@@ -110,6 +158,7 @@
   .nav-tabs {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
   }
 
   .nav-tabs button {
@@ -132,6 +181,68 @@
     background: linear-gradient(135deg, #7a2cff 0%, #45b0ff 100%);
     border-color: transparent;
     color: #fff;
+  }
+
+  /* Network Dropdown */
+  .network-dropdown {
+    position: relative;
+  }
+
+  .network-btn {
+    background: linear-gradient(135deg, rgba(122, 44, 255, 0.25), rgba(69, 176, 255, 0.25));
+    border: 1px solid rgba(122, 44, 255, 0.5);
+    color: #e0e6f6;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .network-btn:hover {
+    background: linear-gradient(135deg, rgba(122, 44, 255, 0.4), rgba(69, 176, 255, 0.4));
+    border-color: rgba(122, 44, 255, 0.8);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(122, 44, 255, 0.25);
+  }
+
+  .network-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: linear-gradient(180deg, #10183e 0%, #0b1030 100%);
+    border: 1px solid rgba(122, 44, 255, 0.35);
+    border-radius: 10px;
+    padding: 0.4rem 0;
+    min-width: 200px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(122, 44, 255, 0.1);
+    z-index: 100;
+  }
+
+  .network-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.65rem 1rem;
+    background: none;
+    border: none;
+    color: #c8d0e8;
+    font-size: 0.88rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+  }
+
+  .network-item:hover {
+    background: rgba(122, 44, 255, 0.15);
+    color: #fff;
+  }
+
+  .network-icon {
+    font-size: 1.1rem;
   }
 
   .app-content {
