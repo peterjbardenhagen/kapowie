@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Kapowie Recorder</title>
+    <style>
+        #KapowieConfigPage .kapowie-header {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        #KapowieConfigPage .kapowie-mark {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #a13dff, #7a2cff 55%, #070b2a 100%);
+            box-shadow: 0 0 14px rgba(122, 44, 255, 0.55);
+            flex-shrink: 0;
+        }
+        #KapowieConfigPage .kapowie-title h1 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        #KapowieConfigPage .kapowie-title p {
+            margin: 0.15rem 0 0;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        #KapowieConfigPage .kapowie-section {
+            border: 1px solid rgba(122, 44, 255, 0.25);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            background: rgba(122, 44, 255, 0.04);
+        }
+        #KapowieConfigPage .kapowie-section h2 {
+            margin-top: 0;
+            font-size: 1.05rem;
+        }
+        #KapowieConfigPage button.kapowie-btn-primary {
+            background: linear-gradient(135deg, #7a2cff 0%, #45b0ff 100%) !important;
+            border: none !important;
+            color: #f6f7fb !important;
+        }
+        #KapowieConfigPage table.kapowieRecordingsTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        #KapowieConfigPage table.kapowieRecordingsTable th,
+        #KapowieConfigPage table.kapowieRecordingsTable td {
+            text-align: left;
+            padding: 0.45rem 0.6rem;
+            border-bottom: 1px solid rgba(160, 168, 192, 0.2);
+        }
+        #KapowieConfigPage .kapowie-badge {
+            display: inline-block;
+            padding: 0.1rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        #KapowieConfigPage .kapowie-badge-recording { background: rgba(232, 59, 255, 0.18); color: #e83bff; }
+        #KapowieConfigPage .kapowie-badge-pending { background: rgba(69, 176, 255, 0.18); color: #45b0ff; }
+        #KapowieConfigPage .kapowie-badge-completed { background: rgba(46, 230, 107, 0.18); color: #2ee66b; }
+        #KapowieConfigPage .kapowie-badge-failed,
+        #KapowieConfigPage .kapowie-badge-cancelled { background: rgba(160, 168, 192, 0.18); color: #a0a8c0; }
+        #KapowieConfigPage .kapowieEmpty {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+        #KapowieConfigPage .kapowieRowActions button {
+            margin-right: 0.4rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="KapowieConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="kapowie-header">
+                    <div class="kapowie-mark"></div>
+                    <div class="kapowie-title">
+                        <h1>Kapowie Recorder</h1>
+                        <p>Capture. Re-stream. Anywhere.</p>
+                    </div>
+                </div>
+
+                <div class="kapowie-section">
+                    <h2>Settings</h2>
+                    <form id="KapowieConfigForm">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="OutputDirectory">Output Directory</label>
+                            <input id="OutputDirectory" name="OutputDirectory" type="text" is="emby-input" placeholder="Leave blank to use the plugin data folder" />
+                            <div class="fieldDescription">Absolute path recordings are written to. Defaults to a "recordings" folder inside the plugin's data directory.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="FfmpegPath">FFmpeg Path</label>
+                            <input id="FfmpegPath" name="FfmpegPath" type="text" is="emby-input" />
+                            <div class="fieldDescription">Path to the ffmpeg executable, or just "ffmpeg" if it is on the server's PATH.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="DefaultDurationMinutes">Default Duration (minutes)</label>
+                            <input id="DefaultDurationMinutes" name="DefaultDurationMinutes" type="number" is="emby-input" min="0" />
+                            <div class="fieldDescription">Applied to scheduled recordings that do not specify a duration.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="SchedulerIntervalSeconds">Scheduler Check Interval (seconds)</label>
+                            <input id="SchedulerIntervalSeconds" name="SchedulerIntervalSeconds" type="number" is="emby-input" min="5" />
+                            <div class="fieldDescription">How often the "Kapowie Recording Scheduler" task should run. Change the task's trigger in Scheduled Tasks for this to take effect.</div>
+                        </div>
+                        <div>
+                            <button is="emby-button" type="submit" class="raised button-submit block emby-button kapowie-btn-primary">
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="kapowie-section">
+                    <h2>New Recording</h2>
+                    <form id="KapowieNewRecordingForm">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="RecordingName">Name</label>
+                            <input id="RecordingName" name="RecordingName" type="text" is="emby-input" placeholder="e.g. Evening News" />
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="RecordingUrl">Source Stream URL</label>
+                            <input id="RecordingUrl" name="RecordingUrl" type="text" is="emby-input" placeholder="https://example.com/stream.m3u8" required />
+                        </div>
+                        <div class="selectContainer">
+                            <label class="selectLabel" for="RecordingMode">When</label>
+                            <select is="emby-select" id="RecordingMode" name="RecordingMode" class="emby-select-withcolor emby-select">
+                                <option value="OnDemand">Record now</option>
+                                <option value="Scheduled">Record at a scheduled time</option>
+                            </select>
+                        </div>
+                        <div class="inputContainer" id="RecordingScheduledContainer" style="display:none;">
+                            <label class="inputLabel inputLabelUnfocused" for="RecordingScheduledStart">Scheduled Start</label>
+                            <input id="RecordingScheduledStart" name="RecordingScheduledStart" type="datetime-local" is="emby-input" />
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="RecordingDuration">Duration (minutes)</label>
+                            <input id="RecordingDuration" name="RecordingDuration" type="number" is="emby-input" min="0" placeholder="0 = record until stopped" />
+                            <div class="fieldDescription">Leave at 0 for an on-demand recording you will stop manually. Required for scheduled recordings.</div>
+                        </div>
+                        <div>
+                            <button is="emby-button" type="submit" class="raised button-submit block emby-button kapowie-btn-primary">
+                                <span>Start / Schedule Recording</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="kapowie-section">
+                    <h2>Recordings</h2>
+                    <table class="kapowieRecordingsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>When</th>
+                                <th>Duration</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="KapowieRecordingsBody"></tbody>
+                    </table>
+                    <p id="KapowieRecordingsEmpty" class="kapowieEmpty" style="display:none;">No recordings yet.</p>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var KapowieConfig = {
+                pluginUniqueId: 'c9a1e9c2-3f5e-4b8a-9d2a-7e6f1b4d8a31'
+            };
+
+            function kapowieFormatDate(value) {
+                if (!value) {
+                    return '—';
+                }
+                try {
+                    return new Date(value).toLocaleString();
+                } catch (e) {
+                    return value;
+                }
+            }
+
+            function kapowieBadgeClass(status) {
+                switch (status) {
+                    case 'Recording': return 'kapowie-badge kapowie-badge-recording';
+                    case 'Pending': return 'kapowie-badge kapowie-badge-pending';
+                    case 'Completed': return 'kapowie-badge kapowie-badge-completed';
+                    default: return 'kapowie-badge kapowie-badge-failed';
+                }
+            }
+
+            function kapowieLoadRecordings() {
+                ApiClient.ajax({
+                    type: 'GET',
+                    url: ApiClient.getUrl('Kapowie/Recordings'),
+                    dataType: 'json'
+                }).then(function (recordings) {
+                    var body = document.querySelector('#KapowieRecordingsBody');
+                    var empty = document.querySelector('#KapowieRecordingsEmpty');
+                    body.innerHTML = '';
+
+                    if (!recordings || recordings.length === 0) {
+                        empty.style.display = 'block';
+                        return;
+                    }
+
+                    empty.style.display = 'none';
+
+                    recordings.forEach(function (job) {
+                        var tr = document.createElement('tr');
+
+                        var nameTd = document.createElement('td');
+                        nameTd.textContent = job.Name;
+                        tr.appendChild(nameTd);
+
+                        var statusTd = document.createElement('td');
+                        var badge = document.createElement('span');
+                        badge.className = kapowieBadgeClass(job.Status);
+                        badge.textContent = job.Status;
+                        statusTd.appendChild(badge);
+                        tr.appendChild(statusTd);
+
+                        var whenTd = document.createElement('td');
+                        whenTd.textContent = job.Mode === 'Scheduled'
+                            ? kapowieFormatDate(job.ScheduledStartUtc)
+                            : kapowieFormatDate(job.StartedUtc || job.CreatedUtc);
+                        tr.appendChild(whenTd);
+
+                        var durationTd = document.createElement('td');
+                        durationTd.textContent = job.DurationMinutes > 0 ? (job.DurationMinutes + ' min') : 'Until stopped';
+                        tr.appendChild(durationTd);
+
+                        var actionsTd = document.createElement('td');
+                        actionsTd.className = 'kapowieRowActions';
+
+                        if (job.Status === 'Recording' || job.Status === 'Pending') {
+                            var stopBtn = document.createElement('button');
+                            stopBtn.setAttribute('is', 'emby-button');
+                            stopBtn.className = 'raised emby-button';
+                            stopBtn.textContent = 'Stop';
+                            stopBtn.addEventListener('click', function () {
+                                ApiClient.ajax({
+                                    type: 'POST',
+                                    url: ApiClient.getUrl('Kapowie/Recordings/' + job.Id + '/Stop')
+                                }).then(kapowieLoadRecordings);
+                            });
+                            actionsTd.appendChild(stopBtn);
+                        }
+
+                        var deleteBtn = document.createElement('button');
+                        deleteBtn.setAttribute('is', 'emby-button');
+                        deleteBtn.className = 'raised emby-button';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.addEventListener('click', function () {
+                            ApiClient.ajax({
+                                type: 'DELETE',
+                                url: ApiClient.getUrl('Kapowie/Recordings/' + job.Id)
+                            }).then(kapowieLoadRecordings);
+                        });
+                        actionsTd.appendChild(deleteBtn);
+
+                        tr.appendChild(actionsTd);
+                        body.appendChild(tr);
+                    });
+                });
+            }
+
+            document.querySelector('#KapowieConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(KapowieConfig.pluginUniqueId).then(function (config) {
+                        document.querySelector('#OutputDirectory').value = config.OutputDirectory || '';
+                        document.querySelector('#FfmpegPath').value = config.FfmpegPath || 'ffmpeg';
+                        document.querySelector('#DefaultDurationMinutes').value = config.DefaultDurationMinutes;
+                        document.querySelector('#SchedulerIntervalSeconds').value = config.SchedulerIntervalSeconds;
+                        Dashboard.hideLoadingMsg();
+                    });
+                    kapowieLoadRecordings();
+                });
+
+            document.querySelector('#RecordingMode')
+                .addEventListener('change', function () {
+                    document.querySelector('#RecordingScheduledContainer').style.display =
+                        this.value === 'Scheduled' ? 'block' : 'none';
+                });
+
+            document.querySelector('#KapowieConfigForm')
+                .addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(KapowieConfig.pluginUniqueId).then(function (config) {
+                        config.OutputDirectory = document.querySelector('#OutputDirectory').value;
+                        config.FfmpegPath = document.querySelector('#FfmpegPath').value;
+                        config.DefaultDurationMinutes = parseInt(document.querySelector('#DefaultDurationMinutes').value, 10) || 0;
+                        config.SchedulerIntervalSeconds = parseInt(document.querySelector('#SchedulerIntervalSeconds').value, 10) || 30;
+                        ApiClient.updatePluginConfiguration(KapowieConfig.pluginUniqueId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+
+            document.querySelector('#KapowieNewRecordingForm')
+                .addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    var mode = document.querySelector('#RecordingMode').value;
+                    var scheduledStart = document.querySelector('#RecordingScheduledStart').value;
+
+                    var payload = {
+                        Name: document.querySelector('#RecordingName').value,
+                        SourceUrl: document.querySelector('#RecordingUrl').value,
+                        Mode: mode,
+                        DurationMinutes: parseInt(document.querySelector('#RecordingDuration').value, 10) || 0,
+                        ScheduledStartUtc: mode === 'Scheduled' && scheduledStart
+                            ? new Date(scheduledStart).toISOString()
+                            : null
+                    };
+
+                    Dashboard.showLoadingMsg();
+                    ApiClient.ajax({
+                        type: 'POST',
+                        url: ApiClient.getUrl('Kapowie/Recordings'),
+                        data: JSON.stringify(payload),
+                        contentType: 'application/json',
+                        dataType: 'json'
+                    }).then(function () {
+                        Dashboard.hideLoadingMsg();
+                        document.querySelector('#KapowieNewRecordingForm').reset();
+                        document.querySelector('#RecordingScheduledContainer').style.display = 'none';
+                        kapowieLoadRecordings();
+                    }, function () {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert('Could not create the recording. Check the server logs for details.');
+                    });
+
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>

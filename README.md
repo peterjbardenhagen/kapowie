@@ -22,6 +22,7 @@ Kapowie does all three — for free, with full control over your data.
 |---------|----------|-------------|
 | **Chrome Extension** | [`extension/`](./extension/) | MV3 extension. Auto-detects HLS/DASH streams, records, re-streams via local HLS server |
 | **Windows Desktop App** | [`desktop/`](./desktop/) | Tauri native app. No browser memory limits, RTSP re-streaming, scheduling |
+| **Jellyfin Plugin** | [`jellyfin-plugin/`](./jellyfin-plugin/) | Records shows and live TV on demand or on a schedule (start time + duration) straight into your Jellyfin library |
 | **Website** | [`Website/`](./Website/) | Marketing site for Kapowie, deployed to [kapowie.vercel.app](https://kapowie.vercel.app) |
 | **Shared Types** | [`shared/`](./shared/) | Common TypeScript types and interfaces used across all platforms |
 | **Our Network** | FreeLiveSports.ai, FightStream.ai, ProStream.ai | Partner streaming platforms for live sports, fights, and professional broadcasts |
@@ -89,6 +90,12 @@ kapowie/
 │   ├── package.json
 │   ├── tauri.conf.json
 │   └── README.md
+├── jellyfin-plugin/         # Jellyfin server plugin (C# / .NET 9)
+│   └── Jellyfin.Plugin.Kapowie/
+│       ├── Services/        # ffmpeg-backed recording engine
+│       ├── ScheduledTasks/  # Scheduled-recording trigger
+│       ├── Api/             # REST API for recording jobs
+│       └── Configuration/   # Admin dashboard config page
 ├── Website/                # Marketing site (static HTML/CSS/JS), deployed to Vercel
 │   ├── index.html
 │   ├── styles.css
