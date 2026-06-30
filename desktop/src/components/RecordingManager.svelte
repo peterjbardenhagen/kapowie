@@ -138,7 +138,7 @@
   }
 
   h2 {
-    color: #e94560;
+    color: var(--kapowie-purple);
     margin: 0;
   }
 
@@ -149,20 +149,22 @@
 
   .actions button {
     padding: 0.5rem 1rem;
-    border: none;
+    border: 1px solid var(--kapowie-border);
     border-radius: 6px;
-    background: #0f3460;
-    color: #eee;
+    background: var(--kapowie-surface);
+    color: var(--kapowie-text);
     cursor: pointer;
     font-size: 0.85rem;
+    transition: border-color 0.15s, background 0.15s;
   }
 
   .actions button:hover:not(:disabled) {
-    background: #e94560;
+    border-color: var(--kapowie-blue);
+    background: rgba(122, 44, 255, 0.12);
   }
 
   .error {
-    background: #3d1212;
+    background: rgba(232, 59, 255, 0.1);
     color: #ff6b6b;
     padding: 0.75rem;
     border-radius: 6px;
@@ -173,8 +175,8 @@
   .empty {
     text-align: center;
     padding: 3rem;
-    color: #888;
-    background: #0f3460;
+    color: var(--kapowie-muted);
+    background: var(--kapowie-surface);
     border-radius: 8px;
   }
 
@@ -185,10 +187,10 @@
   }
 
   .recording-card {
-    background: #0f3460;
+    background: var(--kapowie-surface);
     padding: 1.25rem;
     border-radius: 8px;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
   }
 
   .recording-header {
@@ -200,7 +202,7 @@
 
   .recording-id {
     font-family: monospace;
-    color: #e94560;
+    color: var(--kapowie-blue);
     font-weight: 600;
   }
 
@@ -213,18 +215,18 @@
   }
 
   .status-recording {
-    background: #e94560;
-    color: #fff;
+    background: var(--kapowie-pink);
+    color: var(--kapowie-text);
   }
 
   .status-completed {
-    background: #2ecc71;
-    color: #fff;
+    background: #2ee66b;
+    color: var(--kapowie-navy);
   }
 
   .status-failed {
     background: #e67e22;
-    color: #fff;
+    color: var(--kapowie-text);
   }
 
   .recording-details p {
@@ -235,7 +237,7 @@
   .path {
     font-size: 0.8rem;
     word-break: break-all;
-    color: #888;
+    color: var(--kapowie-muted);
   }
 
   .recording-actions {
@@ -245,16 +247,18 @@
   }
 
   .btn-danger {
-    background: #555;
+    background: rgba(160, 168, 192, 0.18);
     padding: 0.4rem 1rem;
-    border: none;
+    border: 1px solid var(--kapowie-border);
     border-radius: 4px;
-    color: #eee;
+    color: var(--kapowie-text);
     cursor: pointer;
     font-size: 0.85rem;
+    transition: background 0.15s, border-color 0.15s;
   }
 
   .btn-danger:hover {
-    background: #e94560;
+    background: rgba(232, 59, 255, 0.18);
+    border-color: var(--kapowie-pink);
   }
 </style>
