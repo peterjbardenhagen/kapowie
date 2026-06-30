@@ -119,7 +119,7 @@
   }
 
   h2 {
-    color: #e94560;
+    color: var(--kapowie-purple);
     margin-bottom: 1.5rem;
   }
 
@@ -132,32 +132,33 @@
   .url-input input {
     flex: 1;
     padding: 0.6rem 1rem;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
     border-radius: 6px;
-    background: #0f3460;
-    color: #eee;
+    background: var(--kapowie-surface);
+    color: var(--kapowie-text);
     font-size: 0.95rem;
   }
 
   .url-input input:focus {
     outline: none;
-    border-color: #e94560;
+    border-color: var(--kapowie-purple);
   }
 
   button {
     padding: 0.6rem 1.5rem;
     border: none;
     border-radius: 6px;
-    background: #e94560;
-    color: #fff;
+    background: linear-gradient(135deg, var(--kapowie-purple) 0%, var(--kapowie-blue) 100%);
+    color: var(--kapowie-text);
     font-weight: 600;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: background 0.2s;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   button:hover:not(:disabled) {
-    background: #c73550;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(122, 44, 255, 0.4);
   }
 
   button:disabled {
@@ -166,7 +167,7 @@
   }
 
   .error {
-    background: #3d1212;
+    background: rgba(232, 59, 255, 0.1);
     color: #ff6b6b;
     padding: 0.75rem 1rem;
     border-radius: 6px;
@@ -175,15 +176,15 @@
   }
 
   .stream-info {
-    background: #0f3460;
+    background: var(--kapowie-surface);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
   }
 
   .stream-info h3 {
     margin-top: 0;
-    color: #e94560;
+    color: var(--kapowie-purple);
   }
 
   .stream-info table {
@@ -197,7 +198,7 @@
 
   .stream-info td:first-child {
     width: 120px;
-    color: #aaa;
+    color: var(--kapowie-muted);
   }
 
   .controls {
@@ -205,21 +206,26 @@
   }
 
   .btn-record {
-    background: #e94560;
     padding: 0.75rem 2rem;
     font-size: 1rem;
   }
 
   .btn-stop {
-    background: #555;
+    background: rgba(160, 168, 192, 0.18);
+    border: 1px solid var(--kapowie-border);
     padding: 0.75rem 2rem;
     font-size: 1rem;
+  }
+
+  .btn-stop:hover:not(:disabled) {
+    background: rgba(160, 168, 192, 0.28);
+    box-shadow: none;
   }
 
   .recording-indicator {
     margin-top: 1rem;
     padding: 0.5rem;
-    background: #2d1212;
+    background: rgba(232, 59, 255, 0.1);
     border-radius: 4px;
     color: #ff6b6b;
     font-size: 0.85rem;

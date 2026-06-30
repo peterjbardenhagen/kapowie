@@ -134,7 +134,7 @@
   }
 
   h2 {
-    color: #e94560;
+    color: var(--kapowie-purple);
     margin-bottom: 1.5rem;
   }
 
@@ -152,7 +152,7 @@
 
   label {
     font-size: 0.9rem;
-    color: #ccc;
+    color: var(--kapowie-muted);
     font-weight: 500;
   }
 
@@ -160,16 +160,16 @@
   input[type="number"],
   select {
     padding: 0.6rem 0.75rem;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
     border-radius: 6px;
-    background: #0f3460;
-    color: #eee;
+    background: var(--kapowie-surface);
+    color: var(--kapowie-text);
     font-size: 0.9rem;
   }
 
   input:focus, select:focus {
     outline: none;
-    border-color: #e94560;
+    border-color: var(--kapowie-purple);
   }
 
   .input-with-button {
@@ -191,12 +191,12 @@
   .checkbox input[type="checkbox"] {
     width: 1.1rem;
     height: 1.1rem;
-    accent-color: #e94560;
+    accent-color: var(--kapowie-purple);
   }
 
   button[type="submit"] {
-    background: #e94560;
-    color: #fff;
+    background: linear-gradient(135deg, var(--kapowie-purple) 0%, var(--kapowie-blue) 100%);
+    color: var(--kapowie-text);
     border: none;
     padding: 0.75rem;
     border-radius: 6px;
@@ -204,16 +204,18 @@
     font-weight: 600;
     cursor: pointer;
     margin-top: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   button[type="submit"]:hover {
-    background: #c73550;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(122, 44, 255, 0.4);
   }
 
   button[type="button"] {
-    background: #0f3460;
-    color: #eee;
-    border: 1px solid #333;
+    background: var(--kapowie-surface);
+    color: var(--kapowie-text);
+    border: 1px solid var(--kapowie-border);
     padding: 0.6rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -221,16 +223,16 @@
   }
 
   button[type="button"]:hover {
-    border-color: #e94560;
+    border-color: var(--kapowie-blue);
   }
 
   .success {
-    color: #2ecc71;
+    color: #2ee66b;
     font-size: 0.9rem;
   }
 
   .error {
-    background: #3d1212;
+    background: rgba(232, 59, 255, 0.1);
     color: #ff6b6b;
     padding: 0.75rem;
     border-radius: 6px;

@@ -166,21 +166,21 @@
   }
 
   h2 {
-    color: #e94560;
+    color: var(--kapowie-purple);
     margin-bottom: 1.5rem;
   }
 
   h3 {
-    color: #e94560;
+    color: var(--kapowie-purple);
     margin-top: 2rem;
     margin-bottom: 1rem;
   }
 
   .configuration {
-    background: #0f3460;
+    background: var(--kapowie-surface);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
     margin-bottom: 2rem;
   }
 
@@ -199,37 +199,39 @@
 
   label {
     font-size: 0.85rem;
-    color: #aaa;
+    color: var(--kapowie-muted);
     font-weight: 500;
   }
 
   input, select {
     padding: 0.5rem 0.75rem;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
     border-radius: 6px;
-    background: #16213e;
-    color: #eee;
+    background: var(--kapowie-midnight);
+    color: var(--kapowie-text);
     font-size: 0.9rem;
   }
 
   input:focus, select:focus {
     outline: none;
-    border-color: #e94560;
+    border-color: var(--kapowie-purple);
   }
 
   .btn-start {
-    background: #e94560;
-    color: #fff;
+    background: linear-gradient(135deg, var(--kapowie-purple) 0%, var(--kapowie-blue) 100%);
+    color: var(--kapowie-text);
     border: none;
     padding: 0.75rem 2rem;
     border-radius: 6px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .btn-start:hover:not(:disabled) {
-    background: #c73550;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(122, 44, 255, 0.4);
   }
 
   .btn-start:disabled {
@@ -238,7 +240,7 @@
   }
 
   .error {
-    background: #3d1212;
+    background: rgba(232, 59, 255, 0.1);
     color: #ff6b6b;
     padding: 0.75rem;
     border-radius: 6px;
@@ -247,16 +249,16 @@
   }
 
   .empty {
-    color: #888;
+    color: var(--kapowie-muted);
     text-align: center;
     padding: 2rem;
   }
 
   .restream-card {
-    background: #0f3460;
+    background: var(--kapowie-surface);
     padding: 1rem 1.25rem;
     border-radius: 8px;
-    border: 1px solid #333;
+    border: 1px solid var(--kapowie-border);
     margin-bottom: 0.75rem;
     display: flex;
     justify-content: space-between;
@@ -271,8 +273,8 @@
   }
 
   .restream-protocol {
-    background: #e94560;
-    color: #fff;
+    background: linear-gradient(135deg, var(--kapowie-purple) 0%, var(--kapowie-blue) 100%);
+    color: var(--kapowie-text);
     padding: 0.15rem 0.5rem;
     border-radius: 4px;
     font-size: 0.8rem;
@@ -281,7 +283,7 @@
 
   .restream-port {
     font-family: monospace;
-    color: #ccc;
+    color: var(--kapowie-muted);
     font-size: 0.9rem;
   }
 
@@ -295,25 +297,27 @@
   }
 
   .source-url {
-    color: #888;
+    color: var(--kapowie-muted);
     font-size: 0.8rem;
     word-break: break-all;
   }
 
   .viewers {
-    color: #2ecc71;
+    color: #2ee66b;
   }
 
   .btn-danger {
-    background: #555;
-    border: none;
+    background: rgba(160, 168, 192, 0.18);
+    border: 1px solid var(--kapowie-border);
     padding: 0.5rem 1rem;
     border-radius: 4px;
-    color: #eee;
+    color: var(--kapowie-text);
     cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
   }
 
   .btn-danger:hover {
-    background: #e94560;
+    background: rgba(232, 59, 255, 0.18);
+    border-color: var(--kapowie-pink);
   }
 </style>

@@ -406,4 +406,91 @@
   .network-icon {
     font-size: 1rem;
   }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.6rem 1rem 0;
+    border-bottom: 1px solid rgba(160, 168, 192, 0.14);
+  }
+
+  .tabs button {
+    background: none;
+    border: none;
+    color: #a0a8c0;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.5rem 0.85rem;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .tabs button:hover {
+    color: #f6f7fb;
+    background: rgba(122, 44, 255, 0.08);
+  }
+
+  .tabs button.active {
+    color: #f6f7fb;
+    border-bottom-color: #45b0ff;
+    background: rgba(122, 44, 255, 0.12);
+  }
+
+  .popup-content {
+    min-width: 320px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  /* Settings */
+  .settings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .setting-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #c8d0e8;
+  }
+
+  .setting-group input[type='number'] {
+    background: rgba(7, 11, 42, 0.6);
+    border: 1px solid rgba(160, 168, 192, 0.25);
+    color: #f6f7fb;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    width: 6rem;
+    font-family: inherit;
+  }
+
+  .setting-group input[type='checkbox'] {
+    accent-color: #7a2cff;
+  }
+
+  :global(.btn-primary) {
+    background: linear-gradient(135deg, #7a2cff 0%, #45b0ff 100%);
+    color: #f6f7fb;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  :global(.btn-primary:hover) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(122, 44, 255, 0.4);
+  }
 </style>
