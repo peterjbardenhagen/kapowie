@@ -51,7 +51,7 @@ public class RecordingSchedulerTask : IScheduledTask
         {
             new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerInterval,
+                Type = TaskTriggerInfoType.IntervalTrigger,
                 IntervalTicks = TimeSpan.FromSeconds(30).Ticks
             }
         };
