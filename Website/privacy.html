@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Kapowie</title>
+  <meta name="description" content="Kapowie Privacy Policy — how the Kapowie Chrome extension and related products handle your data." />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-mark.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .privacy-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 6rem 1.5rem 4rem;
+      line-height: 1.75;
+      color: var(--text, #e8eaf4);
+    }
+    .privacy-page h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      background: linear-gradient(135deg, #7a2cff, #45b0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .privacy-page .last-updated {
+      font-size: 0.82rem;
+      opacity: 0.55;
+      margin-bottom: 2.5rem;
+    }
+    .privacy-page h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 2.5rem;
+      margin-bottom: 0.6rem;
+      color: #c4c8e8;
+    }
+    .privacy-page p, .privacy-page li {
+      font-size: 0.97rem;
+      opacity: 0.85;
+    }
+    .privacy-page ul {
+      padding-left: 1.4rem;
+    }
+    .privacy-page ul li {
+      margin-bottom: 0.35rem;
+    }
+    .privacy-page a {
+      color: #7a2cff;
+    }
+    .privacy-page .summary-box {
+      border: 1px solid rgba(122, 44, 255, 0.35);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      background: rgba(122, 44, 255, 0.06);
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+    .privacy-page .summary-box strong {
+      color: #45b0ff;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">
+        <img src="/assets/logo-mark.svg" alt="Kapowie logo" class="brand-mark" />
+        <span class="brand-word">Kapowie</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/#features">Features</a>
+        <a href="/#products">Products</a>
+        <a href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="privacy-page">
+      <h1>Privacy Policy</h1>
+      <p class="last-updated">Last updated: June 30, 2026</p>
+
+      <div class="summary-box">
+        <strong>Short version:</strong> Kapowie does not collect, store, or transmit any of your personal data.
+        Everything the extension does happens locally on your device. No account required. No analytics.
+        No third-party data sharing.
+      </div>
+
+      <h2>1. Who we are</h2>
+      <p>
+        Kapowie is an open-source project maintained by Peter Bardenhagen
+        (<a href="mailto:peter@bardenhagen.xyz">peter@bardenhagen.xyz</a>).
+        The Kapowie Chrome extension, desktop app, and website are all freely
+        available under the MIT License at
+        <a href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">github.com/peterjbardenhagen/kapowie</a>.
+      </p>
+
+      <h2>2. What data the extension accesses</h2>
+      <p>The Kapowie Chrome extension requests the following browser permissions to function:</p>
+      <ul>
+        <li><strong>webRequest / declarativeNetRequest</strong> — detects HLS/DASH stream URLs from network traffic on pages you visit. This data is used only to identify the stream URL; it is never stored, logged, or sent anywhere.</li>
+        <li><strong>activeTab / scripting</strong> — injects a small content script on the current tab to observe the video element and discover the stream source. Used only for stream detection; the extension reads no page content beyond the stream URL.</li>
+        <li><strong>tabs</strong> — reads the current tab URL so the content script knows which page it is running on. Used solely for detection logic.</li>
+        <li><strong>storage</strong> — saves your extension settings (selected quality, output format preferences) locally using <code>chrome.storage.local</code>. Nothing is synced to Google's servers or any external service.</li>
+        <li><strong>downloads</strong> — writes the recorded video file to your Downloads folder (or a folder you choose) after muxing is complete. The extension does not upload files anywhere.</li>
+        <li><strong>offscreen</strong> — opens a hidden document to run FFmpeg (compiled to WebAssembly) for muxing stream segments into an MP4 file. All processing is local.</li>
+        <li><strong>host permissions (all URLs)</strong> — required to fetch the stream segment files (HLS .ts / DASH .m4s files) from whichever server the stream originates on, and to inject CORS headers so the browser can download them. The extension does not read page content through these permissions.</li>
+      </ul>
+
+      <h2>3. Data we do NOT collect</h2>
+      <p>Kapowie never collects, stores, or transmits:</p>
+      <ul>
+        <li>Your browsing history or visited URLs</li>
+        <li>The content of pages you visit</li>
+        <li>Your personal identity or email address</li>
+        <li>Usage analytics or crash reports</li>
+        <li>The video content you record</li>
+        <li>Any form of telemetry</li>
+      </ul>
+
+      <h2>4. Local processing only</h2>
+      <p>
+        All stream downloading, segment decryption (AES-128), and video muxing
+        (FFmpeg.wasm) occurs entirely within your browser on your local machine.
+        Recorded files are saved directly to your local disk via the
+        <code>chrome.downloads</code> API. Kapowie has no backend server and makes no
+        outbound connections on your behalf (other than fetching the stream
+        segments themselves from the streaming provider's servers, which is the
+        same request your browser would make to play the video).
+      </p>
+
+      <h2>5. Third-party services</h2>
+      <p>
+        The extension does not load any third-party analytics, advertising, or
+        tracking scripts. The FFmpeg WebAssembly core is bundled directly inside
+        the extension package — it is not fetched from a CDN at runtime.
+      </p>
+      <p>
+        The Kapowie marketing website (kapowie.vercel.app) is hosted on Vercel
+        and loads Google Fonts. Vercel's and Google's own privacy policies apply
+        to those interactions. The website has no login, no forms, and does not
+        set cookies.
+      </p>
+
+      <h2>6. Children's privacy</h2>
+      <p>
+        Kapowie is not directed at children under 13. We do not knowingly collect
+        any information from children.
+      </p>
+
+      <h2>7. Changes to this policy</h2>
+      <p>
+        If we make material changes to this policy, we will update the "Last
+        updated" date above and commit the change to the public GitHub repository,
+        where you can view the full history.
+      </p>
+
+      <h2>8. Contact</h2>
+      <p>
+        Questions or concerns? Open an issue on
+        <a href="https://github.com/peterjbardenhagen/kapowie/issues" target="_blank" rel="noopener">GitHub</a>
+        or email <a href="mailto:peter@bardenhagen.xyz">peter@bardenhagen.xyz</a>.
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">Kapowie</span>
+      <nav class="footer-links">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/peterjbardenhagen/kapowie/blob/master/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      </nav>
+      <span class="footer-copy">&copy; 2026 Kapowie</span>
+    </div>
+  </footer>
+</body>
+</html>

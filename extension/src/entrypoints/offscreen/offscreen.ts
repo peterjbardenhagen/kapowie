@@ -64,8 +64,10 @@ async function getFFmpeg(): Promise<FFmpeg> {
       });
     });
 
-    // Load FFmpeg core — use CDN for the wasm binary
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    // Load FFmpeg core from files bundled inside the extension (not a remote
+    // CDN) — the Chrome Web Store rejects extensions that fetch executable
+    // code from outside the packaged extension.
+    const baseURL = chrome.runtime.getURL('/ffmpeg');
     await ff.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
