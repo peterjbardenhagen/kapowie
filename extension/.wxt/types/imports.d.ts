@@ -2,78 +2,78 @@
 export {}
 declare global {
   const ContentScriptContext: typeof import('wxt/client')['ContentScriptContext']
-  const CryptoError: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['CryptoError']
-  const DASHParserError: typeof import('/home/peterb/dev/kapowie/extension/src/utils/stream-manager')['DASHParserError']
-  const DownloadError: typeof import('/home/peterb/dev/kapowie/extension/src/utils/downloader')['DownloadError']
-  const DownloadManager: typeof import('/home/peterb/dev/kapowie/extension/src/utils/downloader')['DownloadManager']
-  const HLSParserError: typeof import('/home/peterb/dev/kapowie/extension/src/utils/stream-manager')['HLSParserError']
+  const CryptoError: typeof import('/home/user/kapowie/extension/src/utils/crypto')['CryptoError']
+  const DASHParserError: typeof import('/home/user/kapowie/extension/src/utils/parsers')['DASHParserError']
+  const DownloadError: typeof import('/home/user/kapowie/extension/src/utils/downloader')['DownloadError']
+  const DownloadManager: typeof import('/home/user/kapowie/extension/src/utils/downloader')['DownloadManager']
+  const HLSParserError: typeof import('/home/user/kapowie/extension/src/utils/parsers')['HLSParserError']
   const InvalidMatchPattern: typeof import('wxt/sandbox')['InvalidMatchPattern']
-  const KeyCache: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['KeyCache']
+  const KeyCache: typeof import('/home/user/kapowie/extension/src/utils/crypto')['KeyCache']
   const MatchPattern: typeof import('wxt/sandbox')['MatchPattern']
   const MigrationError: typeof import('wxt/storage')['MigrationError']
-  const SegmentBuffer: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['SegmentBuffer']
-  const StreamManager: typeof import('/home/peterb/dev/kapowie/extension/src/utils/stream-manager')['StreamManager']
+  const SegmentBuffer: typeof import('/home/user/kapowie/extension/src/utils/storage')['SegmentBuffer']
+  const StreamManager: typeof import('/home/user/kapowie/extension/src/utils/stream-manager')['StreamManager']
   const browser: typeof import('wxt/browser')['browser']
-  const computeDASHSegmentUrl: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['computeDASHSegmentUrl']
-  const computeIVForSequence: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['computeIVForSequence']
+  const computeDASHSegmentUrl: typeof import('/home/user/kapowie/extension/src/utils/parsers')['computeDASHSegmentUrl']
+  const computeIVForSequence: typeof import('/home/user/kapowie/extension/src/utils/crypto')['computeIVForSequence']
   const createIframeUi: typeof import('wxt/client')['createIframeUi']
   const createIntegratedUi: typeof import('wxt/client')['createIntegratedUi']
   const createShadowRootUi: typeof import('wxt/client')['createShadowRootUi']
-  const decryptAES128CBC: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['decryptAES128CBC']
-  const decryptSegment: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['decryptSegment']
+  const decryptAES128CBC: typeof import('/home/user/kapowie/extension/src/utils/crypto')['decryptAES128CBC']
+  const decryptSegment: typeof import('/home/user/kapowie/extension/src/utils/crypto')['decryptSegment']
   const defineAppConfig: typeof import('wxt/sandbox')['defineAppConfig']
   const defineBackground: typeof import('wxt/sandbox')['defineBackground']
   const defineConfig: typeof import('wxt')['defineConfig']
   const defineContentScript: typeof import('wxt/sandbox')['defineContentScript']
   const defineUnlistedScript: typeof import('wxt/sandbox')['defineUnlistedScript']
   const defineWxtPlugin: typeof import('wxt/sandbox')['defineWxtPlugin']
-  const deleteRecordingStorage: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['deleteRecordingStorage']
-  const deleteSegmentData: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['deleteSegmentData']
-  const detectStreamProtocol: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['detectStreamProtocol']
-  const downloadBinary: typeof import('/home/peterb/dev/kapowie/extension/src/utils/downloader')['downloadBinary']
-  const downloadConcurrent: typeof import('/home/peterb/dev/kapowie/extension/src/utils/downloader')['downloadConcurrent']
-  const estimateStorageUsage: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['estimateStorageUsage']
-  const extractDomain: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['extractDomain']
+  const deleteRecordingStorage: typeof import('/home/user/kapowie/extension/src/utils/storage')['deleteRecordingStorage']
+  const deleteSegmentData: typeof import('/home/user/kapowie/extension/src/utils/storage')['deleteSegmentData']
+  const detectStreamProtocol: typeof import('/home/user/kapowie/extension/src/utils/parsers')['detectStreamProtocol']
+  const downloadBinary: typeof import('/home/user/kapowie/extension/src/utils/downloader')['downloadBinary']
+  const downloadConcurrent: typeof import('/home/user/kapowie/extension/src/utils/downloader')['downloadConcurrent']
+  const estimateStorageUsage: typeof import('/home/user/kapowie/extension/src/utils/storage')['estimateStorageUsage']
+  const extractDomain: typeof import('/home/user/kapowie/extension/src/utils/parsers')['extractDomain']
   const fakeBrowser: typeof import('wxt/testing')['fakeBrowser']
-  const fetchEncryptionKey: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['fetchEncryptionKey']
-  const formatBytes: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['formatBytes']
-  const formatDuration: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['formatDuration']
-  const generateRecordingId: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['generateRecordingId']
-  const getSegmentData: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['getSegmentData']
-  const getStoredSize: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['getStoredSize']
+  const fetchEncryptionKey: typeof import('/home/user/kapowie/extension/src/utils/crypto')['fetchEncryptionKey']
+  const formatBytes: typeof import('/home/user/kapowie/extension/src/utils/parsers')['formatBytes']
+  const formatDuration: typeof import('/home/user/kapowie/extension/src/utils/parsers')['formatDuration']
+  const generateRecordingId: typeof import('/home/user/kapowie/extension/src/utils/parsers')['generateRecordingId']
+  const getSegmentData: typeof import('/home/user/kapowie/extension/src/utils/storage')['getSegmentData']
+  const getStoredSize: typeof import('/home/user/kapowie/extension/src/utils/storage')['getStoredSize']
   const injectScript: typeof import('wxt/client')['injectScript']
-  const listRecordingIds: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['listRecordingIds']
-  const loadRecordingMeta: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['loadRecordingMeta']
-  const loadSettings: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['loadSettings']
-  const normalizeStreamUrl: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['normalizeStreamUrl']
-  const parseDASHManifest: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['parseDASHManifest']
-  const parseHLSManifest: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['parseHLSManifest']
-  const parseIV: typeof import('/home/peterb/dev/kapowie/extension/src/utils/crypto')['parseIV']
-  const resolveUrl: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['resolveUrl']
-  const saveRecordingMeta: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['saveRecordingMeta']
-  const saveSettings: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['saveSettings']
-  const selectVariant: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['selectVariant']
-  const sortVariantsByBandwidth: typeof import('/home/peterb/dev/kapowie/extension/src/utils/parsers')['sortVariantsByBandwidth']
+  const listRecordingIds: typeof import('/home/user/kapowie/extension/src/utils/storage')['listRecordingIds']
+  const loadRecordingMeta: typeof import('/home/user/kapowie/extension/src/utils/storage')['loadRecordingMeta']
+  const loadSettings: typeof import('/home/user/kapowie/extension/src/utils/storage')['loadSettings']
+  const normalizeStreamUrl: typeof import('/home/user/kapowie/extension/src/utils/parsers')['normalizeStreamUrl']
+  const parseDASHManifest: typeof import('/home/user/kapowie/extension/src/utils/parsers')['parseDASHManifest']
+  const parseHLSManifest: typeof import('/home/user/kapowie/extension/src/utils/parsers')['parseHLSManifest']
+  const parseIV: typeof import('/home/user/kapowie/extension/src/utils/crypto')['parseIV']
+  const resolveUrl: typeof import('/home/user/kapowie/extension/src/utils/parsers')['resolveUrl']
+  const saveRecordingMeta: typeof import('/home/user/kapowie/extension/src/utils/storage')['saveRecordingMeta']
+  const saveSettings: typeof import('/home/user/kapowie/extension/src/utils/storage')['saveSettings']
+  const selectVariant: typeof import('/home/user/kapowie/extension/src/utils/parsers')['selectVariant']
+  const sortVariantsByBandwidth: typeof import('/home/user/kapowie/extension/src/utils/parsers')['sortVariantsByBandwidth']
   const storage: typeof import('wxt/storage')['storage']
-  const storeSegmentData: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['storeSegmentData']
-  const storeSegmentsBatch: typeof import('/home/peterb/dev/kapowie/extension/src/utils/storage')['storeSegmentsBatch']
+  const storeSegmentData: typeof import('/home/user/kapowie/extension/src/utils/storage')['storeSegmentData']
+  const storeSegmentsBatch: typeof import('/home/user/kapowie/extension/src/utils/storage')['storeSegmentsBatch']
   const useAppConfig: typeof import('wxt/client')['useAppConfig']
 }
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { KeyCache, CryptoError } from '/home/peterb/dev/kapowie/extension/src/utils/crypto'
-  import('/home/peterb/dev/kapowie/extension/src/utils/crypto')
+  export type { KeyCache, CryptoError } from '/home/user/kapowie/extension/src/utils/crypto'
+  import('/home/user/kapowie/extension/src/utils/crypto')
   // @ts-ignore
-  export type { DownloadManager, DownloadError, DownloadOptions, DownloadResult, ConcurrentDownloadOptions } from '/home/peterb/dev/kapowie/extension/src/utils/downloader'
-  import('/home/peterb/dev/kapowie/extension/src/utils/downloader')
+  export type { DownloadManager, DownloadError, DownloadOptions, DownloadResult, ConcurrentDownloadOptions } from '/home/user/kapowie/extension/src/utils/downloader'
+  import('/home/user/kapowie/extension/src/utils/downloader')
   // @ts-ignore
-  export type { HLSParserError, DASHParserError, StreamProtocol, DetectedProtocol } from '/home/peterb/dev/kapowie/extension/src/utils/parsers'
-  import('/home/peterb/dev/kapowie/extension/src/utils/parsers')
+  export type { HLSParserError, DASHParserError, StreamProtocol, DetectedProtocol } from '/home/user/kapowie/extension/src/utils/parsers'
+  import('/home/user/kapowie/extension/src/utils/parsers')
   // @ts-ignore
-  export type { SegmentBuffer } from '/home/peterb/dev/kapowie/extension/src/utils/storage'
-  import('/home/peterb/dev/kapowie/extension/src/utils/storage')
+  export type { SegmentBuffer } from '/home/user/kapowie/extension/src/utils/storage'
+  import('/home/user/kapowie/extension/src/utils/storage')
   // @ts-ignore
-  export type { StreamManager, RecordingState, RecordedSegment, RecordingSession, StreamManagerOptions } from '/home/peterb/dev/kapowie/extension/src/utils/stream-manager'
-  import('/home/peterb/dev/kapowie/extension/src/utils/stream-manager')
+  export type { StreamManager, RecordingState, RecordedSegment, RecordingSession, StreamManagerOptions } from '/home/user/kapowie/extension/src/utils/stream-manager'
+  import('/home/user/kapowie/extension/src/utils/stream-manager')
 }
