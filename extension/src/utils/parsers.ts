@@ -68,7 +68,7 @@ function parseMasterPlaylist(
       if (!uri || uri.startsWith('#')) continue;
 
       const bandwidth = parseInt(attrs['BANDWIDTH'] || '0', 10);
-      const resolution = attrs['RESOLUTIONS'];
+      const resolution = attrs['RESOLUTION'];
       const codecs = attrs['CODECS'];
       const name = attrs['NAME'];
 

@@ -1,16 +1,15 @@
 {
-  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/dev/.schema/config.schema.json",
+  "$schema": "https://schema.tauri.app/config/2",
   "productName": "Kapowie",
   "version": "0.1.0",
   "identifier": "com.kapowie.app",
   "build": {
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
   },
   "app": {
-    "title": "Kapowie",
     "windows": [
       {
         "title": "Kapowie - Stream Recorder & Re-streamer",
@@ -21,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' data: asset: https://asset.localhost; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost"
     }
   },
   "bundle": {

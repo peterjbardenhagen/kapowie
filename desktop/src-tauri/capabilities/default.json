@@ -1,22 +1,17 @@
 {
-  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/dev/.schema/capabilities.schema.json",
+  "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Default permissions for Kapowie desktop app",
   "windows": ["main"],
   "permissions": [
-    "path:default",
-    "event:default",
-    "window:default",
-    "app:default",
-    "resources:default",
-    "image:default",
-    "menu:default",
-    "tray:default",
-    "shell:allow-open",
-    "dialog:default",
-    "fs:default",
-    "fs:allow-write",
-    "fs:allow-read",
-    "fs:allow-create"
+    "core:path:default",
+    "core:event:default",
+    "core:window:default",
+    "core:app:default",
+    "core:resources:default",
+    "core:image:default",
+    "core:menu:default",
+    "core:tray:default",
+    "shell:allow-open"
   ]
 }

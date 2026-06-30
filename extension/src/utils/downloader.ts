@@ -166,6 +166,7 @@ export async function downloadConcurrent<T extends { url: string }>(
 export class DownloadManager {
   private queue: Array<{
     url: string;
+    headers?: Record<string, string>;
     resolve: (data: Uint8Array) => void;
     reject: (error: Error) => void;
     priority: number;
@@ -188,8 +189,11 @@ export class DownloadManager {
   }
 
   async fetchWithHeaders(url: string, headers?: Record<string, string>, priority = 0): Promise<Uint8Array> {
-    // For HLS segments, headers are usually not needed beyond what the browser sends
-    return this.fetch(url, priority);
+    return new Promise((resolve, reject) => {
+      this.queue.push({ url, headers, resolve, reject, priority });
+      this.queue.sort((a, b) => b.priority - a.priority);
+      this.processNext();
+    });
   }
 
   private async processNext() {
@@ -201,7 +205,7 @@ export class DownloadManager {
     this.activeCount++;
 
     try {
-      const result = await this.doDownload(item.url);
+      const result = await this.doDownload(item.url, item.headers);
       item.resolve(result);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
@@ -212,13 +216,14 @@ export class DownloadManager {
     }
   }
 
-  private async doDownload(url: string): Promise<Uint8Array> {
+  private async doDownload(url: string, headers?: Record<string, string>): Promise<Uint8Array> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < this.retryCount; attempt++) {
       try {
         const result = await downloadBinary({
           url,
+          headers,
           timeout: 10000,
         });
 

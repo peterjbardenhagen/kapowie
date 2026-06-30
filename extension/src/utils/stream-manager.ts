@@ -3,7 +3,7 @@
 import type { StreamInfo, Recording } from '../types';
 import { KeyCache } from './crypto';
 import { DownloadManager } from './downloader';
-import { parseHLSManifest, parseDASHManifest, computeDASHSegmentUrl, selectVariant, HLSParserError, DASHParserError } from './parsers';
+import { parseHLSManifest, parseDASHManifest, computeDASHSegmentUrl, selectVariant } from './parsers';
 import { storeSegmentsBatch, SegmentBuffer } from './storage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -49,6 +49,9 @@ export interface StreamManagerOptions {
  * manifest polling, segment fetching/decryption, and recording state.
  */
 export class StreamManager {
+  private static readonly MAX_STORED_ERRORS = 20;
+  private static readonly MAX_CONSECUTIVE_ERRORS = 10;
+
   private sessions = new Map<string, RecordingSession>();
   private keyCache = new KeyCache(64);
   private downloadManager: DownloadManager;
@@ -200,6 +203,7 @@ export class StreamManager {
     session.segmentBuffer = segmentBuffer;
 
     let sequenceOffset = 0;
+    let consecutiveErrors = 0;
 
     while (!abortController.signal.aborted) {
       try {
@@ -214,9 +218,13 @@ export class StreamManager {
         const segments: RecordedSegment[] = [];
 
         if (stream.type === 'hls') {
-          segments.push(...await this.captureHLSSegments(stream, quality, sequenceOffset));
+          const result = await this.captureHLSSegments(stream, quality, sequenceOffset);
+          segments.push(...result.segments);
+          sequenceOffset = result.nextOffset;
         } else if (stream.type === 'dash') {
-          segments.push(...await this.captureDASHSegments(stream, sequenceOffset));
+          const result = await this.captureDASHSegments(stream, sequenceOffset);
+          segments.push(...result.segments);
+          sequenceOffset = result.nextOffset;
         }
 
         if (segments.length > 0) {
@@ -244,6 +252,7 @@ export class StreamManager {
 
         session.state = 'fetching_manifest';
         this.options.onSessionUpdate(session);
+        consecutiveErrors = 0;
 
         // Poll interval
         await this.sleep(this.options.manifestPollIntervalMs, abortController.signal);
@@ -255,7 +264,17 @@ export class StreamManager {
         const message = err instanceof Error ? err.message : String(err);
         console.error('[StreamManager] Capture error:', message);
         session.errors.push(message);
+        if (session.errors.length > StreamManager.MAX_STORED_ERRORS) {
+          session.errors.splice(0, session.errors.length - StreamManager.MAX_STORED_ERRORS);
+        }
         this.options.onError(recordingId, message);
+
+        consecutiveErrors++;
+        if (consecutiveErrors >= StreamManager.MAX_CONSECUTIVE_ERRORS) {
+          session.state = 'error';
+          this.options.onSessionUpdate(session);
+          break;
+        }
 
         // Back off on error
         await this.sleep(5000, abortController.signal);
@@ -269,7 +288,7 @@ export class StreamManager {
     stream: StreamInfo,
     quality: string,
     sequenceOffset: number
-  ): Promise<RecordedSegment[]> {
+  ): Promise<{ segments: RecordedSegment[]; nextOffset: number }> {
     // Fetch manifest
     const response = await fetch(stream.url);
     if (!response.ok) {
@@ -289,7 +308,7 @@ export class StreamManager {
     }
 
     if (parsed.segments.length === 0) {
-      return [];
+      return { segments: [], nextOffset: sequenceOffset };
     }
 
     // Determine which segments are new (not yet downloaded)
@@ -315,7 +334,7 @@ export class StreamManager {
       }
     }
 
-    return segments;
+    return { segments, nextOffset: parsed.segments.length };
   }
 
   // ─── DASH Capture ────────────────────────────────────────────────────────
@@ -323,7 +342,7 @@ export class StreamManager {
   private async captureDASHSegments(
     stream: StreamInfo,
     sequenceOffset: number
-  ): Promise<RecordedSegment[]> {
+  ): Promise<{ segments: RecordedSegment[]; nextOffset: number }> {
     const response = await fetch(stream.url);
     if (!response.ok) {
       throw new Error(`MPD fetch failed: ${response.status}`);
@@ -332,7 +351,7 @@ export class StreamManager {
 
     const parsed = parseDASHManifest(mpdText, stream.url);
     if (parsed.representations.length === 0) {
-      return [];
+      return { segments: [], nextOffset: sequenceOffset };
     }
 
     // Select highest bandwidth video representation
@@ -342,7 +361,7 @@ export class StreamManager {
 
     const selected = videoReprs[0];
     if (!selected?.segmentTemplate) {
-      return [];
+      return { segments: [], nextOffset: sequenceOffset };
     }
 
     // Compute next segment number based on template
@@ -374,7 +393,7 @@ export class StreamManager {
       }
     }
 
-    return segments;
+    return { segments, nextOffset: sequenceOffset + segments.length };
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -402,6 +421,3 @@ export class StreamManager {
     this.downloadManager.cancelAll();
   }
 }
-
-// Re-export for convenience
-export { HLSParserError, DASHParserError };

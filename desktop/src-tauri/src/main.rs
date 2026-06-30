@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use tauri::Manager;
-
 mod commands;
 mod core;
 mod config;

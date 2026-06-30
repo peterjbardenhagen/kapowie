@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tauri::Manager;
-
-use crate::main::RestreamsState;
+use tauri_plugin_shell::ShellExt;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RecordingMeta {
@@ -15,20 +13,28 @@ pub struct RecordingMeta {
 }
 
 fn get_recordings_dir() -> String {
-    let dir = dirs::download_dir()
-        .unwrap_or_else(|| std::env::current_dir().unwrap_or_default())
-        .join("Kapowie/Recordings");
-    dir.to_string_lossy().to_string()
+    let dir = dirs::download_dir().unwrap_or_else(|| {
+        log::warn!("Could not resolve system download directory; falling back to current working directory");
+        std::env::current_dir().unwrap_or_default()
+    });
+    dir.join("Kapowie/Recordings").to_string_lossy().to_string()
 }
 
 #[tauri::command]
 pub async fn delete_recording(path: String) -> Result<(), String> {
-    let path_obj = Path::new(&path);
-    if !path_obj.exists() {
-        return Err(format!("File not found: {}", path));
+    let recordings_dir = Path::new(&get_recordings_dir())
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve recordings directory: {}", e))?;
+
+    let path_obj = Path::new(&path)
+        .canonicalize()
+        .map_err(|_| format!("File not found: {}", path))?;
+
+    if !path_obj.starts_with(&recordings_dir) {
+        return Err("Refusing to delete a file outside the recordings directory".to_string());
     }
 
-    tokio::fs::remove_file(&path)
+    tokio::fs::remove_file(&path_obj)
         .await
         .map_err(|e| format!("Failed to delete recording: {}", e))?;
 
@@ -44,13 +50,18 @@ pub async fn get_recording_path(id: String) -> Result<String, String> {
         .await
         .map_err(|e| format!("Failed to read recordings directory: {}", e))?;
 
+    // Filenames embed only the first 8 characters of the recording id (see
+    // capture.rs::start_recording), so match against that exact fragment.
+    let short_id = &id[..id.len().min(8)];
+    let suffix = format!("_{}.mp4", short_id);
+
     while let Some(entry) = entries
         .next_entry()
         .await
         .map_err(|e| format!("Read dir error: {}", e))?
     {
         let filename = entry.file_name().to_string_lossy().to_string();
-        if filename.contains(&id) {
+        if filename.ends_with(&suffix) {
             return Ok(entry.path().to_string_lossy().to_string());
         }
     }
@@ -68,7 +79,9 @@ pub async fn open_recording_folder(app_handle: tauri::AppHandle) -> Result<(), S
         .map_err(|e| format!("Failed to create recordings directory: {}", e))?;
 
     // Use tauri-plugin-shell to open the folder
-    tauri_plugin_shell::ShellExt::open(&app_handle.shell(), &recordings_dir, None::<&str>)
+    app_handle
+        .shell()
+        .open(&recordings_dir, None)
         .map_err(|e| format!("Failed to open folder: {}", e))?;
 
     Ok(())

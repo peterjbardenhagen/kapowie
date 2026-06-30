@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::main::RestreamsState;
+use crate::RestreamsState;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ReStreamStatus {
@@ -28,6 +28,13 @@ pub async fn start_restream(
 
     if !(1024..=65535).contains(&port) {
         return Err("Port must be between 1024 and 65535".to_string());
+    }
+
+    {
+        let restream_map = restreams.0.lock().await;
+        if restream_map.values().any(|r| r.port == port && r.status == "active") {
+            return Err(format!("Port {} is already in use by an active re-stream", port));
+        }
     }
 
     let id = uuid::Uuid::new_v4().to_string();
