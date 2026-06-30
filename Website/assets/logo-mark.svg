@@ -1,0 +1,29 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kapowie logo mark">
+  <defs>
+    <linearGradient id="ring" x1="96" y1="64" x2="416" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7A2CFF"/>
+      <stop offset="0.55" stop-color="#45B0FF"/>
+      <stop offset="1" stop-color="#A13DFF"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="130" y1="96" x2="372" y2="408" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1030"/>
+      <stop offset="0.5" stop-color="#161C4A"/>
+      <stop offset="1" stop-color="#070B2A"/>
+    </linearGradient>
+    <linearGradient id="slash" x1="176" y1="112" x2="336" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E83BFF"/>
+      <stop offset="1" stop-color="#45B0FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="none"/>
+
+  <path d="M144 122C183 92 236 76 288 83C331 88 371 108 401 141" stroke="url(#ring)" stroke-width="22" stroke-linecap="round"/>
+  <path d="M406 171C421 212 423 256 411 299C400 338 378 373 347 398" stroke="url(#ring)" stroke-width="22" stroke-linecap="round"/>
+  <path d="M347 400C310 426 264 438 217 435C172 433 132 417 99 389" stroke="url(#ring)" stroke-width="22" stroke-linecap="round"/>
+
+  <path d="M180 110H246L222 207H290L158 402L192 250H126L180 110Z" fill="url(#bolt)"/>
+  <path d="M214 142L262 142L215 223L266 223L194 347L217 252H175L214 142Z" fill="url(#slash)"/>
+
+  <path d="M294 127L349 127L260 272H323L274 377L238 377L315 246H255L294 127Z" fill="#070B2A" opacity="0.94"/>
+</svg>

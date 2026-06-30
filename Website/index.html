@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kapowie — Capture. Re-stream. Anywhere.</title>
+  <meta name="description" content="Kapowie is an open source platform to capture live streams, re-stream them locally or to the cloud, and keep control of your content." />
+
+  <meta property="og:title" content="Kapowie — Capture. Re-stream. Anywhere." />
+  <meta property="og:description" content="Record live streams from any website. Re-stream to your TV, phone, or any device in near real-time. Free, open source, self-hosted." />
+  <meta property="og:image" content="https://kapowie.vercel.app/assets/og-image.jpg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kapowie.vercel.app" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kapowie — Capture. Re-stream. Anywhere." />
+  <meta name="twitter:description" content="Record it. Re-stream it. Own your stream. Open source, MIT licensed." />
+  <meta name="twitter:image" content="https://kapowie.vercel.app/assets/og-image.jpg" />
+
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-mark.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#top" class="brand">
+        <img src="/assets/logo-mark.svg" alt="Kapowie logo" class="brand-mark" />
+        <span class="brand-word">Kapowie</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#products">Products</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <a class="btn btn-ghost header-cta" href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">
+        ★ Star the repo
+      </a>
+    </div>
+  </header>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="kapowie-icon-gradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#7A2CFF" />
+        <stop offset="100%" stop-color="#45B0FF" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <span class="badge">⚡ Launching Kapowie</span>
+          <h1>
+            Record it.<br />
+            Re-stream it.<br />
+            <span class="gradient-text">Own your stream.</span>
+          </h1>
+          <p class="hero-lede">
+            Kapowie is an open source platform to capture live streams, re-stream
+            them locally or to the cloud, and keep control of your content.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">
+              View on GitHub
+            </a>
+            <a class="btn btn-outline" href="#products">
+              Explore products
+            </a>
+          </div>
+          <p class="hero-meta">Open source · MIT licensed · Community driven</p>
+        </div>
+        <div class="hero-media">
+          <img src="/assets/product-preview.png" alt="Kapowie Chrome extension popup and desktop dashboard showing live recording and re-stream outputs" />
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="container">
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M9 9l5 3-5 3V9z" fill="url(#kapowie-icon-gradient)" stroke="none"/></svg>
+            </div>
+            <h3>Chrome Extension</h3>
+            <p>Detect &amp; record live streams from any website, automatically.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0 1 14 0"/><path d="M2 12a10 10 0 0 1 20 0"/><circle cx="12" cy="12" r="2" fill="url(#kapowie-icon-gradient)" stroke="none"/></svg>
+            </div>
+            <h3>Re-stream</h3>
+            <p>Local HLS server &amp; RTSP via mediamtx to any device on your network.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+            </div>
+            <h3>Desktop App</h3>
+            <p>Tauri + Rust + Svelte. Powerful, native, no browser memory limits.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.5-8.97A5.5 5.5 0 0 1 17.3 8.04 4 4 0 0 1 17 16"/><path d="M12 12v6"/><path d="M9.5 15.5L12 13l2.5 2.5"/></svg>
+            </div>
+            <h3>Cloud &amp; Schedules</h3>
+            <p>Upload, schedule, and monitor streams so you never miss a capture.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z" fill="url(#kapowie-icon-gradient)" stroke="none"/></svg>
+            </div>
+            <h3>Open Source</h3>
+            <p>MIT licensed and community driven. Open, private, powerful.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="products" class="products">
+      <div class="container">
+        <h2>Products</h2>
+        <p class="section-lede">Two ways to use Kapowie — pick the one that fits your setup.</p>
+        <div class="product-grid">
+          <article class="product-card">
+            <h3>Chrome Extension</h3>
+            <p>MV3 extension. Auto-detects HLS/DASH streams, records, and re-streams via a local HLS server.</p>
+            <pre><code>cd extension
+npm install
+npm run build</code></pre>
+          </article>
+          <article class="product-card">
+            <h3>Windows Desktop App</h3>
+            <p>Tauri native app. No browser memory limits, RTSP re-streaming, and scheduling.</p>
+            <pre><code>cd desktop
+npm install
+npm run tauri dev</code></pre>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="how">
+      <div class="container">
+        <h2>How it works</h2>
+        <ol class="how-steps">
+          <li>
+            <span class="step-index">01</span>
+            <div>
+              <h3>Detect</h3>
+              <p>Content script spots a live &lt;video&gt; element or an HLS/DASH manifest request.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-index">02</span>
+            <div>
+              <h3>Capture</h3>
+              <p>Segments download concurrently, decrypt if needed, and mux to MP4 — all locally.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-index">03</span>
+            <div>
+              <h3>Re-stream</h3>
+              <p>A local HLS server (and RTSP on desktop) serves the stream to any device on your network.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container cta-inner">
+        <h2>Open. Private. Powerful.</h2>
+        <p>Kapowie keeps your streams under your control — no accounts, no analytics, no lock-in.</p>
+        <a class="btn btn-primary" href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">
+          ★ Star the repo on GitHub
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a href="#top" class="brand">
+        <img src="/assets/logo-mark.svg" alt="Kapowie logo" class="brand-mark" />
+        <span class="brand-word">Kapowie</span>
+      </a>
+      <p class="tagline">Capture. Re-stream. Anywhere.</p>
+      <a href="https://github.com/peterjbardenhagen/kapowie" target="_blank" rel="noopener">github.com/peterjbardenhagen/kapowie</a>
+      <p class="copyright">MIT Licensed · © <span id="year"></span> Kapowie</p>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>
