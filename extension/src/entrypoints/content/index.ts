@@ -67,18 +67,19 @@ function detectCastrStreams(html: string): StreamInfo[] {
 
 // ─── Network Interception ────────────────────────────────────────────────────
 
-function interceptNetworkRequests(): string[] {
-  const urls: string[] = [];
+function interceptNetworkRequests(onStreamUrl: (url: string) => void): PerformanceObserver {
+  const seen = new Set<string>();
   const observer = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
       const url = entry.name;
-      if (isStreamUrl(url) || url.includes('castr.com')) {
-        urls.push(url);
+      if ((isStreamUrl(url) || url.includes('castr.com')) && !seen.has(url)) {
+        seen.add(url);
+        onStreamUrl(url);
       }
     }
   });
   observer.observe({ entryTypes: ['resource'] });
-  return urls;
+  return observer;
 }
 
 // ─── Main Entry Point ────────────────────────────────────────────────────────
@@ -106,7 +107,21 @@ export function main() {
   }
 
   // Set up network interception
-  interceptNetworkRequests();
+  const networkObserver = interceptNetworkRequests((url) => {
+    chrome.runtime.sendMessage({
+      type: 'STREAM_DETECTED',
+      payload: {
+        streams: [{
+          url,
+          type: /\.m3u8/.test(url) || url.includes('m3u8') ? 'hls' : 'dash',
+          quality: 'auto',
+          pageUrl: window.location.href,
+          pageTitle: document.title,
+          detectedAt: Date.now(),
+        } satisfies StreamInfo],
+      },
+    }).catch(() => {});
+  });
 
   // Observe DOM for dynamically added videos
   const domObserver = new MutationObserver(() => {
@@ -123,50 +138,15 @@ export function main() {
     childList: true,
     subtree: true,
   });
+
+  window.addEventListener('pagehide', () => {
+    networkObserver.disconnect();
+    domObserver.disconnect();
+  }, { once: true });
 }
 
 // WXT content script default export
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],
-  main() {
-    console.log('[Kapowie] Content script loaded');
-
-    // Scan for video elements
-    const videoStreams = detectVideoStreams();
-    if (videoStreams.length > 0) {
-      chrome.runtime.sendMessage({
-        type: 'STREAM_DETECTED',
-        payload: { streams: videoStreams },
-      }).catch(() => {});
-    }
-
-    // Scan for Castr embeds in page source
-    const html = document.documentElement.innerHTML;
-    const castrStreams = detectCastrStreams(html);
-    if (castrStreams.length > 0) {
-      chrome.runtime.sendMessage({
-        type: 'STREAM_DETECTED',
-        payload: { streams: castrStreams },
-      }).catch(() => {});
-    }
-
-    // Set up network interception
-    interceptNetworkRequests();
-
-    // Observe DOM for dynamically added videos
-    const domObserver = new MutationObserver(() => {
-      const newStreams = detectVideoStreams();
-      if (newStreams.length > 0) {
-        chrome.runtime.sendMessage({
-          type: 'STREAM_DETECTED',
-          payload: { streams: newStreams },
-        }).catch(() => {});
-      }
-    });
-
-    domObserver.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
-  },
+  main,
 });
