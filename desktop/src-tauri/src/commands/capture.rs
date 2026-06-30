@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use tauri::State;
-use tokio::sync::Mutex;
 
-use crate::main::RecordingsState;
+use crate::RecordingsState;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StreamInfo {
@@ -38,12 +36,14 @@ pub async fn get_stream_info(url: String) -> Result<StreamInfo, String> {
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))?;
 
-    let response = client
-        .head(&url)
-        .send()
-        .await
-        .or_else(|_| client.get(&url).send().await)
-        .map_err(|e| format!("Failed to fetch stream: {}", e))?;
+    let response = match client.head(&url).send().await {
+        Ok(resp) => resp,
+        Err(_) => client
+            .get(&url)
+            .send()
+            .await
+            .map_err(|e| format!("Failed to fetch stream: {}", e))?,
+    };
 
     let content_type = response
         .headers()
@@ -93,7 +93,12 @@ pub async fn start_recording(
         format!("{}/{}", output_dir.trim_end_matches('/'), filename)
     };
 
-    log::info!("Starting recording: {} -> {}", url, output_path);
+    log::info!(
+        "Starting recording: {} -> {} (quality: {})",
+        url,
+        output_path,
+        quality
+    );
 
     let recording = RecordingState {
         id: id.clone(),
