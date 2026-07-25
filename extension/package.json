@@ -20,14 +20,14 @@
     "@ffmpeg/util": "^0.12.1",
     "idb": "^8.0.0",
     "mux.js": "^7.1.0",
-    "svelte": "^4.2.19"
+    "svelte": "^5.56.4"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",
     "jsdom": "^25.0.1",
     "svelte-check": "^4.1.4",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.5",
-    "wxt": "^0.19.13"
+    "vitest": "^4.1.9",
+    "wxt": "^0.20.27"
   }
 }
