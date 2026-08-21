@@ -124,14 +124,14 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore
-        run: dotnet restore Jellyfin.Plugin.Kapowie/Jellyfin.Plugin.Kapowie.csproj
+        run: dotnet restore Jellyfin.Plugin.Restreamer.ai/Jellyfin.Plugin.Restreamer.ai.csproj
 
       - name: Build
-        run: dotnet build Jellyfin.Plugin.Kapowie/Jellyfin.Plugin.Kapowie.csproj --configuration Release --no-restore
+        run: dotnet build Jellyfin.Plugin.Restreamer.ai/Jellyfin.Plugin.Restreamer.ai.csproj --configuration Release --no-restore
 
       - name: Upload plugin DLL
         uses: actions/upload-artifact@v4
         with:
           name: jellyfin-plugin
-          path: jellyfin-plugin/Jellyfin.Plugin.Kapowie/bin/Release/net9.0/Jellyfin.Plugin.Kapowie.dll
+          path: jellyfin-plugin/Jellyfin.Plugin.Restreamer.ai/bin/Release/net9.0/Jellyfin.Plugin.Restreamer.ai.dll
           retention-days: 30

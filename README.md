@@ -1,6 +1,6 @@
 # 🎬 Restreamer.ai
 
-[![Deploy to Vercel](https://github.com/peterjbardenhagen/kapowie/actions/workflows/deploy-vercel.yml/badge.svg)](https://github.com/peterjbardenhagen/kapowie/actions/workflows/deploy-vercel.yml)
+[![Deploy to Vercel](https://github.com/peterjbardenhagen/Restreamer.ai/actions/workflows/deploy-vercel.yml/badge.svg)](https://github.com/peterjbardenhagen/Restreamer.ai/actions/workflows/deploy-vercel.yml)
 
 **AI-powered live stream recorder & re-streamer**
 

@@ -1,0 +1,42 @@
+npm notice run pjb-dr-dashboard@2.2.0 npx
+npm notice run 'vercel' --prod
+Vercel CLI 59.1.3 (Node.js 26.4.0)
+Deploying restreamer-ai
+  Inspect         https://vercel.com/peterjbardenhagens-projects/restreamer-ai/JDVE26HLsoLd5m7ZTUS1ES1RkhqS
+  Production      https://restreamer-l54xh9own-peterjbardenhagens-projects.vercel.app
+https://restreamer-l54xh9own-peterjbardenhagens-projects.vercel.appBuilding…
+Building…
+Running build in Washington, D.C., USA (East) – iad1
+Build machine configuration: 2 cores, 8 GB
+Retrieving list of deployment files...
+Downloading 1052 deployment files...
+Restored build cache from previous deployment (C3WpZW4Y6powQCBbv1hMBGsfEjA8)
+Warning: "vercel" found in project dependencies and will be ignored.
+Running "vercel build"
+Vercel CLI 59.1.4
+Installing dependencies...
+up to date in 1s
+226 packages are looking for funding
+run `npm fund` for details
+npm warn allow-scripts 4 packages have install scripts not yet covered by allowScripts:
+npm warn allow-scripts   @swc/core@1.15.47 (postinstall: node postinstall.js)
+npm warn allow-scripts   esbuild@0.27.0 (postinstall: node install.js)
+npm warn allow-scripts   puppeteer@25.5.0 (postinstall: node install.mjs)
+npm warn allow-scripts   unrs-resolver@1.12.2 (postinstall: node postinstall.js)
+npm warn allow-scripts
+npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+Running "npm run build"
+> pjb-dr-dashboard@2.2.0 prebuild
+> node scripts/generate-build-info.mjs && node scripts/check-pages.mjs
+[build-info] v2.2.0 (1e5c566) @ 2026-08-21T02:41:43.527Z
+✓ all 68 routes registered (23 in nav, 45 search-only)
+> pjb-dr-dashboard@2.2.0 build
+> next build --webpack
+▲ Next.js 16.3.0 (webpack)
+- Environments: .env
+✓ Running next.config.ts took 122ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+Creating an optimized production build ...

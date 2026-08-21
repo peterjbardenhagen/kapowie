@@ -1,0 +1,22 @@
+npm notice run pjb-dr-dashboard@2.2.0 npx
+npm notice run 'vercel' --prod
+Vercel CLI 59.1.3 (Node.js 26.4.0)
+Deploying restreamer-ai
+  Inspect         https://vercel.com/peterjbardenhagens-projects/restreamer-ai/xZdysTdBays9seJai7ZPhLXtHvEb
+  Production      https://restreamer-dzxux1kb0-peterjbardenhagens-projects.vercel.app
+https://restreamer-dzxux1kb0-peterjbardenhagens-projects.vercel.appBuilding…
+Building…
+Running build in Washington, D.C., USA (East) – iad1
+Build machine configuration: 2 cores, 8 GB
+Retrieving list of deployment files...
+Downloading 1052 deployment files...
+Restored build cache from previous deployment (JDVE26HLsoLd5m7ZTUS1ES1RkhqS)
+Warning: "vercel" found in project dependencies and will be ignored.
+Running "vercel build"
+Vercel CLI 59.1.4
+Installing dependencies...
+[2K[1A[2K[G  Production      https://restreamer-dzxux1kb0-peterjbardenhagens-projects.vercel.app
+Completing…
+▲ Aliased         https://restreamer-ai.vercel.app
+
+✓ Ready in 16s
