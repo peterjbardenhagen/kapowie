@@ -1,4 +1,4 @@
-# 🎬 Kapowie
+# 🎬 Restreamer.ai
 
 [![Deploy to Vercel](https://github.com/peterjbardenhagen/kapowie/actions/workflows/deploy-vercel.yml/badge.svg)](https://github.com/peterjbardenhagen/kapowie/actions/workflows/deploy-vercel.yml)
 
@@ -6,7 +6,7 @@
 
 Record live streams from any website. Re-stream to your TV, phone, or any device in near real-time.
 
-## Why Kapowie?
+## Why Restreamer.ai?
 
 You watch free live streams (news, sports, IPTV, events) on websites. You want to:
 
@@ -14,7 +14,7 @@ You watch free live streams (news, sports, IPTV, events) on websites. You want t
 - 📡 **Re-stream** to another device (Smart TV, phone, computer) in near real-time
 - ✂️ **Clip** specific segments without recording the entire stream
 
-Kapowie does all three — for free, with full control over your data.
+Restreamer.ai does all three — for free, with full control over your data.
 
 ## Products
 
@@ -23,7 +23,7 @@ Kapowie does all three — for free, with full control over your data.
 | **Chrome Extension** | [`extension/`](./extension/) | MV3 extension. Auto-detects HLS/DASH streams, records, re-streams via local HLS server |
 | **Windows Desktop App** | [`desktop/`](./desktop/) | Tauri native app. No browser memory limits, RTSP re-streaming, scheduling |
 | **Jellyfin Plugin** | [`jellyfin-plugin/`](./jellyfin-plugin/) | Records shows and live TV on demand or on a schedule (start time + duration) straight into your Jellyfin library |
-| **Website** | [`Website/`](./Website/) | Marketing site for Kapowie, deployed to [kapowie.vercel.app](https://kapowie.vercel.app) |
+| **Website** | [`Website/`](./Website/) | Marketing site for Restreamer.ai, deployed to [restreamer.ai](https://restreamer.ai) |
 | **Shared Types** | [`shared/`](./shared/) | Common TypeScript types and interfaces used across all platforms |
 | **Our Network** | FreeLiveSports.ai, FightStream.ai, ProStream.ai | Partner streaming platforms for live sports, fights, and professional broadcasts |
 
@@ -72,7 +72,7 @@ npm run tauri build
 ## Project Structure
 
 ```
-kapowie/
+Restreamer.ai/
 ├── extension/              # Chrome MV3 Extension (WXT + Svelte + TypeScript)
 │   ├── src/
 │   │   ├── entrypoints/    # background, content, popup, offscreen
@@ -170,8 +170,8 @@ See [AGENTS.md](./AGENTS.md) for AI agent contribution guidelines.
 
 ```bash
 # Clone
-git clone git@github.com:peterjbardenhagen/kapowie.git
-cd kapowie
+git clone git@github.com:peterjbardenhagen/Restreamer.ai.git
+cd Restreamer.ai
 
 # Extension
 cd extension && npm install && npm run build

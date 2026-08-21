@@ -10,7 +10,7 @@ EXTENSION_DIR="$PROJECT_ROOT/extension"
 BUILD_DIR="$PROJECT_ROOT/build"
 VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$PROJECT_ROOT/package.json" | head -1 | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)"/\1/')
 
-echo "Building Kapowie Chrome Extension v${VERSION}"
+echo "Building Restreamer.ai Chrome Extension v${VERSION}"
 
 # Clean previous build
 rm -rf "$BUILD_DIR"
@@ -23,18 +23,18 @@ if [ ! -d "$EXTENSION_DIR" ]; then
 fi
 
 # Copy extension files
-cp -r "$EXTENSION_DIR" "$BUILD_DIR/kapowie-extension"
+cp -r "$EXTENSION_DIR" "$BUILD_DIR/restreamer-extension"
 
 # Update version in manifest if present
-if [ -f "$BUILD_DIR/kapowie-extension/manifest.json" ]; then
-  sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" "$BUILD_DIR/kapowie-extension/manifest.json"
+if [ -f "$BUILD_DIR/restreamer-extension/manifest.json" ]; then
+  sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" "$BUILD_DIR/restreamer-extension/manifest.json"
   echo "Updated manifest version to ${VERSION}"
 fi
 
 # Create ZIP
-ZIP_FILE="$BUILD_DIR/kapowie-extension-v${VERSION}.zip"
+ZIP_FILE="$BUILD_DIR/restreamer-extension-v${VERSION}.zip"
 cd "$BUILD_DIR"
-zip -r "kapowie-extension-v${VERSION}.zip" kapowie-extension/
+zip -r "restreamer-extension-v${VERSION}.zip" restreamer-extension/
 cd "$PROJECT_ROOT"
 
 echo "Build complete: $ZIP_FILE"

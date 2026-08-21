@@ -1,4 +1,4 @@
-# Kapowie Desktop
+# Restreamer.ai Desktop
 
 A native desktop application for recording and re-streaming live streams. Built with Tauri (Rust backend + Svelte frontend).
 

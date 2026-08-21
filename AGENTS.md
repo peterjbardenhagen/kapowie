@@ -2,20 +2,20 @@
 
 ## Welcome
 
-This is the **kapowie** project — an AI-powered live stream recorder & re-streamer. This document provides guidelines for AI coding agents (Claude Code, Codex, Copilot, OpenClaw, etc.) contributing to this repository.
+This is the **Restreamer.ai** project — an AI-powered live stream recorder & re-streamer. This document provides guidelines for AI coding agents (Claude Code, Codex, Copilot, OpenClaw, etc.) contributing to this repository.
 
 ## Project Context
 
-**What is Kapowie?** A free tool that lets users record live streams from any website and re-stream them to another device (TV, phone, computer) in near real-time.
+**What is Restreamer.ai?** A free tool that lets users record live streams from any website and re-stream them to another device (TV, phone, computer) in near real-time.
 
 **Target users:** Sports fans, news viewers, cord-cutters, content curators — anyone who wants to capture or redirect free live video.
 
-**Key differentiator:** Existing tools (Video DownloadHelper, media-bridge) only download. Kapowie adds re-streaming — turn any website stream into a local HLS/RTSP feed for any device on your network.
+**Key differentiator:** Existing tools (Video DownloadHelper, media-bridge) only download. Restreamer.ai adds re-streaming — turn any website stream into a local HLS/RTSP feed for any device on your network.
 
 ## Repository Structure
 
 ```
-kapowie/
+Restreamer.ai/
 ├── extension/          # Chrome MV3 Extension — PRIMARY PRODUCT
 ├── desktop/            # Windows Desktop App (Tauri) — SECONDARY
 ├── shared/             # Cross-platform shared types/utils
@@ -149,7 +149,7 @@ npm run tauri build  # Production MSI installer
 ## Security Considerations
 
 - **No data leaves the browser** — all processing is local
-- **No analytics or telemetry** — Kapowie doesn't phone home
+- **No analytics or telemetry** — Restreamer.ai doesn't phone home
 - **No DRM circumvention** — don't attempt to break Widevine/FairPlay
 - **Permissions are minimal** — only request what's needed
 - **Native messaging** (if used) should validate all inputs

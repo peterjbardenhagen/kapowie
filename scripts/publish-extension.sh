@@ -5,7 +5,7 @@
 
 set -e
 
-ZIP_FILE="${1:-scripts/dist/kapowie-extension-v0.1.0.zip}"
+ZIP_FILE="${1:-scripts/dist/restreamer-extension-v0.1.0.zip}"
 EXTENSION_ID="YOUR_EXTENSION_ID_HERE"  # Replace after first upload
 
 if [ ! -f "$ZIP_FILE" ]; then
